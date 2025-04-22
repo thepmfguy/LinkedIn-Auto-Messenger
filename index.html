@@ -273,7 +273,9 @@
                         .replace(/`/g, '\\`')
                         .replace(/\n/g, '\\n')
                         .replace(/\$/g, '\\$')
-                        .replace(/\\/g, '\\\\');
+                        .replace(/\\/g, '\\\\')
+                        .replace(/'/g, "\\'")
+                        .replace(/"/g, '\\"');
                 }
             });
             
@@ -493,7 +495,7 @@ const processApplicant = async (applicant) => {
         }
 
         const name = nameElement.textContent.trim();
-        console.log('\nProcessing applicant:', name);
+        console.log('Processing applicant:', name);
 
         // Force close all message windows
         await closeAllMessageWindows();
