@@ -4,46 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LinkedIn Applicant Messenger</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tailwindcss/typography@0.5.x/dist/typography.min.css"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.0-rc.2/dist/quill.snow.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
-    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
-    <script src="https://unpkg.com/@lottiefiles/lottie-interactivity@latest/dist/lottie-interactivity.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="globals.css">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
-                    colors: {
-                        primary: {
-                            50: '#f0f9ff',
-                            100: '#e0f2fe',
-                            200: '#bae6fd',
-                            300: '#7dd3fc',
-                            400: '#38bdf8',
-                            500: '#0ea5e9',
-                            600: '#0284c7',
-                            700: '#0369a1',
-                            800: '#075985',
-                            900: '#0c4a6e',
-                        }
-                    },
                     borderRadius: {
                         DEFAULT: '0.7rem'
-                    },
-                    animation: {
-                        'float': 'float 6s ease-in-out infinite',
-                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                    },
-                    keyframes: {
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-20px)' },
-                        }
                     }
                 }
             }
@@ -52,81 +27,51 @@
     <style>
         .ql-editor {
             min-height: 200px;
-            font-size: 1rem;
-            line-height: 1.5;
+            font-size: var(--font-size-base);
+            line-height: var(--line-height-normal);
+            color: var(--color-text-primary);
         }
         .ql-toolbar {
-            border-top-left-radius: 0.7rem;
-            border-top-right-radius: 0.7rem;
+            border-top-left-radius: var(--radius-lg);
+            border-top-right-radius: var(--radius-lg);
+            background-color: var(--color-background-secondary);
+            border-color: var(--color-border);
         }
         .ql-container {
-            border-bottom-left-radius: 0.7rem;
-            border-bottom-right-radius: 0.7rem;
+            border-bottom-left-radius: var(--radius-lg);
+            border-bottom-right-radius: var(--radius-lg);
+            background-color: var(--color-background);
+            border-color: var(--color-border);
         }
         .dark .ql-snow {
-            border-color: #374151 !important;
+            border-color: var(--color-border) !important;
         }
         .dark .ql-toolbar {
-            background-color: #1f2937;
-            border-color: #374151;
+            background-color: var(--color-background-secondary);
+            border-color: var(--color-border);
         }
         .dark .ql-container {
-            background-color: #1f2937;
-            border-color: #374151;
-        }
-        .dark .ql-editor {
-            color: #f3f4f6;
-        }
-        .gradient-text {
-            background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .card-hover {
-            transition: all 0.3s ease;
-        }
-        .card-hover:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-        .toggle-checkbox:checked {
-            right: 0;
-            border-color: #0ea5e9;
-        }
-        .toggle-checkbox:checked + .toggle-label {
-            background-color: #0ea5e9;
+            background-color: var(--color-background);
+            border-color: var(--color-border);
         }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200">
-    <!-- Hero Section with Animation -->
-    <div class="relative overflow-hidden">
-        <div class="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
-            <div class="text-center">
-                <h1 class="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-6 animate__animated animate__fadeIn">
-                    LinkedIn Applicant <span class="gradient-text">Messenger</span>
-                </h1>
-                <p class="text-xl text-gray-600 dark:text-gray-400 mb-8 animate__animated animate__fadeIn animate__delay-1s">
-                    Automate your applicant messaging with personalized templates
-                </p>
-                <div class="w-64 h-64 mx-auto animate__animated animate__fadeIn animate__delay-2s">
-                    <lottie-player
-                        src="https://assets5.lottiefiles.com/packages/lf20_5tkzkblw.json"
-                        background="transparent"
-                        speed="1"
-                        loop
-                        autoplay>
-                    </lottie-player>
-                </div>
-            </div>
+<body class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <!-- Hero Section -->
+    <div class="container py-16">
+        <div class="text-center">
+            <h1 class="h1 mb-4 text-gray-900 dark:text-white">LinkedIn Applicant Messenger</h1>
+            <p class="text-xl mb-8 text-gray-600 dark:text-gray-300">
+                Automate your applicant messaging with personalized templates
+            </p>
         </div>
     </div>
 
     <!-- Main Content -->
-    <div class="max-w-4xl mx-auto px-4 py-8">
+    <div class="container py-8">
         <!-- Message Template Section -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-8 card-hover">
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Message Template</h2>
+        <div class="card mb-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+            <h2 class="h2 mb-4 text-gray-900 dark:text-white">Message Template</h2>
             <div class="mb-4">
                 <div id="editor" class="border border-gray-200 dark:border-gray-700 rounded-lg"></div>
             </div>
@@ -136,46 +81,46 @@
         <!-- Options Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <!-- Applicant Limit -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 card-hover">
-                <label for="applicantLimit" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <div class="card bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                <label for="applicantLimit" class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                     Number of Applicants to Process
                 </label>
-                <input type="number" id="applicantLimit" min="1" value="10"
-                    class="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white">
+                <input type="number" id="applicantLimit" min="1" value="10" 
+                    class="w-full px-4 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             </div>
 
             <!-- Approval Toggle -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 card-hover">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <div class="card bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                     Require Approval Before Sending
                 </label>
                 <div class="flex items-center">
                     <div class="relative inline-block w-12 mr-2 align-middle select-none">
                         <input type="checkbox" id="approvalToggle" checked
-                            class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-200 dark:border-gray-700 dark:bg-gray-700 transition-transform duration-200 ease-in-out transform translate-x-0">
+                            class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition-transform duration-200 ease-in-out transform translate-x-0 border-gray-300 dark:border-gray-600">
                         <label for="approvalToggle"
-                            class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-200 dark:bg-gray-600 cursor-pointer"></label>
+                            class="toggle-label block overflow-hidden h-6 rounded-full cursor-pointer bg-gray-300 dark:bg-gray-600"></label>
                     </div>
-                    <span id="approvalStatus" class="text-sm text-gray-600 dark:text-gray-400">Enabled</span>
+                    <span id="approvalStatus" class="text-sm text-gray-500 dark:text-gray-400">Enabled</span>
                 </div>
             </div>
         </div>
 
         <!-- Action Buttons -->
         <div class="flex flex-col sm:flex-row gap-4 mb-8">
-            <button id="generateScript"
-                class="flex-1 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105">
+            <button id="generateScript" 
+                class="flex-1 px-6 py-3 text-white bg-blue-600 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg transition-colors duration-200">
                 Generate Script
             </button>
-            <button id="copyScript"
-                class="flex-1 px-6 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105">
+            <button id="copyScript" 
+                class="flex-1 px-6 py-3 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 rounded-lg transition-colors duration-200">
                 Copy Script
             </button>
         </div>
 
         <!-- Generated Script Section -->
-        <div id="scriptCard" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-8 hidden card-hover">
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Your Custom Script</h2>
+        <div id="scriptCard" class="card mb-8 hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+            <h2 class="h2 mb-4 text-gray-900 dark:text-white">Your Custom Script</h2>
             <div class="relative">
                 <div class="flex justify-between items-center bg-gray-900 px-4 py-3 rounded-t-lg">
                     <div class="flex items-center space-x-2">
@@ -183,7 +128,8 @@
                         <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
                         <div class="w-3 h-3 rounded-full bg-green-500"></div>
                     </div>
-                    <button id="copyCodeBtn" class="px-3 py-1 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors duration-200 flex items-center space-x-2">
+                    <button id="copyCodeBtn" 
+                        class="px-3 py-1 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors duration-200 flex items-center space-x-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
                         </svg>
@@ -195,97 +141,85 @@
         </div>
 
         <!-- How It Works Section -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-8 card-hover">
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">How It Works</h2>
+        <div class="card mb-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+            <h2 class="h2 mb-6 text-gray-900 dark:text-white">How It Works</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="text-center">
-                    <div class="w-16 h-16 mx-auto mb-4">
-                        <lottie-player
-                            src="https://assets5.lottiefiles.com/packages/lf20_5tkzkblw.json"
-                            background="transparent"
-                            speed="1"
-                            loop
-                            autoplay>
-                        </lottie-player>
+                    <div class="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center bg-gray-100 dark:bg-gray-700">
+                        <svg class="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Customize Template</h3>
+                    <h3 class="h3 mb-2 text-gray-900 dark:text-white">Customize Template</h3>
                     <p class="text-gray-600 dark:text-gray-400">Create your message template with rich text formatting</p>
                 </div>
                 <div class="text-center">
-                    <div class="w-16 h-16 mx-auto mb-4">
-                        <lottie-player
-                            src="https://assets5.lottiefiles.com/packages/lf20_5tkzkblw.json"
-                            background="transparent"
-                            speed="1"
-                            loop
-                            autoplay>
-                        </lottie-player>
+                    <div class="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center bg-gray-100 dark:bg-gray-700">
+                        <svg class="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                        </svg>
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Generate Script</h3>
+                    <h3 class="h3 mb-2 text-gray-900 dark:text-white">Generate Script</h3>
                     <p class="text-gray-600 dark:text-gray-400">Get your personalized automation script</p>
                 </div>
                 <div class="text-center">
-                    <div class="w-16 h-16 mx-auto mb-4">
-                        <lottie-player
-                            src="https://assets5.lottiefiles.com/packages/lf20_5tkzkblw.json"
-                            background="transparent"
-                            speed="1"
-                            loop
-                            autoplay>
-                        </lottie-player>
+                    <div class="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center bg-gray-100 dark:bg-gray-700">
+                        <svg class="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Run Automation</h3>
+                    <h3 class="h3 mb-2 text-gray-900 dark:text-white">Run Automation</h3>
                     <p class="text-gray-600 dark:text-gray-400">Paste the script in LinkedIn's console</p>
                 </div>
             </div>
         </div>
 
         <!-- Detailed Instructions -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 card-hover">
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">Detailed Instructions</h2>
+        <div class="card bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+            <h2 class="h2 mb-6 text-gray-900 dark:text-white">Detailed Instructions</h2>
             <div class="space-y-6">
                 <div class="flex items-start space-x-4">
-                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-400 flex items-center justify-center">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
                         1
                     </div>
                     <div>
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Visit Your Job Post</h3>
+                        <h3 class="h3 mb-2 text-gray-900 dark:text-white">Visit Your Job Post</h3>
                         <p class="text-gray-600 dark:text-gray-400">Go to your LinkedIn job post and navigate to the view where all candidates are shown.</p>
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-400 flex items-center justify-center">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
                         2
                     </div>
                     <div>
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Open Developer Console</h3>
+                        <h3 class="h3 mb-2 text-gray-900 dark:text-white">Open Developer Console</h3>
                         <p class="text-gray-600 dark:text-gray-400">Right-click anywhere on the page and select "Inspect" or press F12. Then click on the "Console" tab.</p>
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-400 flex items-center justify-center">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
                         3
                     </div>
                     <div>
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Enable Pasting</h3>
+                        <h3 class="h3 mb-2 text-gray-900 dark:text-white">Enable Pasting</h3>
                         <p class="text-gray-600 dark:text-gray-400">If this is your first time, type "allow pasting" in the console when prompted.</p>
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-400 flex items-center justify-center">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
                         4
                     </div>
                     <div>
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Run the Script</h3>
+                        <h3 class="h3 mb-2 text-gray-900 dark:text-white">Run the Script</h3>
                         <p class="text-gray-600 dark:text-gray-400">Paste the generated script and press Enter to start the automation. The tool will automatically start sending messages to candidates.</p>
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-400 flex items-center justify-center">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
                         5
                     </div>
                     <div>
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Multiple Pages</h3>
+                        <h3 class="h3 mb-2 text-gray-900 dark:text-white">Multiple Pages</h3>
                         <p class="text-gray-600 dark:text-gray-400">Remember to run the script again when you navigate to the next page of applicants. Make sure to set the limit correctly to match the number of applicants on each page.</p>
                     </div>
                 </div>
@@ -294,8 +228,9 @@
     </div>
 
     <!-- Theme Toggle -->
-    <button id="themeToggle" class="fixed bottom-4 right-4 p-3 bg-white dark:bg-gray-800 rounded-full shadow-lg transition-transform duration-200 hover:scale-110">
-        <svg class="w-6 h-6 text-gray-800 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <button id="themeToggle" 
+        class="fixed bottom-4 right-4 p-3 rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm transition-transform duration-200 hover:scale-105">
+        <svg class="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path id="themeIcon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
         </svg>
     </button>
