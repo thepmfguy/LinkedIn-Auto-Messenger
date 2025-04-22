@@ -459,7 +459,7 @@ const processApplicant = async (applicant) => {
         const applicantLink = applicant.querySelector('a');
         if (applicantLink) {
             applicantLink.click();
-            await sleep(3000); // Increased wait time
+            await sleep(3000);
         }
 
         // Find and click message button
@@ -470,11 +470,11 @@ const processApplicant = async (applicant) => {
         }
 
         messageButton.click();
-        await sleep(3000); // Increased wait time
+        await sleep(3000);
 
         // Find message input and send button
         const messageInput = document.querySelector('div.msg-form__contenteditable[contenteditable="true"][role="textbox"]');
-        const sendButton = document.querySelector('button.msg-form__send-button[type="submit"]');
+        const sendButton = document.querySelector('button.msg-form__send-button.artdeco-button--1[type="submit"]');
         
         if (!messageInput || !sendButton) {
             console.log('Message dialog elements not found');
@@ -513,7 +513,31 @@ const processApplicant = async (applicant) => {
             attempts++;
             console.log(\`Send attempt \${attempts} of \${maxAttempts}\`);
             
+            // Check if send button is enabled and has the correct class
+            const isSendButtonEnabled = !sendButton.disabled && 
+                sendButton.classList.contains('msg-form__send-button') && 
+                sendButton.classList.contains('artdeco-button--1');
+                
+            if (!isSendButtonEnabled) {
+                console.log('Send button is not in correct state, checking form...');
+                
+                // Re-focus the message input
+                messageInput.focus();
+                await sleep(1000);
+                
+                // Re-verify content
+                if (messageInput.textContent.length === 0) {
+                    console.log('Content was cleared, re-setting...');
+                    messageInput.innerHTML = personalizedMessage;
+                    await sleep(1000);
+                }
+                
+                // Wait for button to become enabled
+                await sleep(2000);
+            }
+            
             // Click send button
+            console.log('Clicking send button...');
             sendButton.click();
             await sleep(2000);
             
@@ -522,7 +546,18 @@ const processApplicant = async (applicant) => {
             
             if (!messageSent) {
                 console.log('Message not sent, retrying...');
-                await sleep(1000);
+                // Try alternative send method
+                const form = document.querySelector('form.msg-form');
+                if (form) {
+                    console.log('Trying form submit...');
+                    form.dispatchEvent(new Event('submit', { bubbles: true }));
+                    await sleep(2000);
+                    messageSent = !document.querySelector('div.msg-form__contenteditable[contenteditable="true"][role="textbox"]');
+                }
+                
+                if (!messageSent) {
+                    await sleep(1000);
+                }
             }
         }
 
