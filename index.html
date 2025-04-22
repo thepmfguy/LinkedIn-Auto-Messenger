@@ -264,109 +264,204 @@
             const requireApproval = document.getElementById('approvalToggle').checked;
             
             const script = `// LinkedIn Applicant Messenger Script
-async function processApplicants() {
-    try {
-        const applicantLimit = ${applicantLimit};
-        const requireApproval = ${requireApproval};
-        const messageTemplate = \`${message}\`;
-        
-        // Wait for the applicant list to load
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Find all applicant cards using the exact selector structure
-        const applicants = document.querySelectorAll('.applicant-card');
-        
-        if (!applicants.length) {
-            throw new Error('No applicants found. Please make sure you are on the LinkedIn Jobs page showing the list of applicants.');
-        }
-        
-        let processed = 0;
-        console.log(\`Found \${applicants.length} applicants. Will process up to \${applicantLimit} applicants.\`);
+const config = {
+    messageTemplate: \`${message}\`,
+    delayBetweenMessages: 3000,
+    applicantLimit: ${applicantLimit}  // Set by user input
+};
 
-        for (const applicant of applicants) {
-            if (processed >= applicantLimit) break;
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-            try {
-                // Get applicant name using the exact selector
-                const nameElement = applicant.querySelector('.applicant-name');
-                if (!nameElement) {
-                    console.log('Could not find name element, skipping applicant');
-                    continue;
-                }
-                
-                const name = nameElement.textContent.trim();
-                console.log(\`Processing applicant: \${name}\`);
+const waitForElement = async (selector, timeout = 10000) => {
+    const startTime = Date.now();
+    while (Date.now() - startTime < timeout) {
+        const element = document.querySelector(selector);
+        if (element) return element;
+        await sleep(500);
+    }
+    return null;
+};
 
-                // Find and click message button using the exact selector
-                const messageButton = applicant.querySelector('.message-button');
-                if (!messageButton) {
-                    console.log(\`No message button found for \${name}\`);
-                    continue;
-                }
-                
-                messageButton.click();
-                console.log('Clicked message button');
-                
-                // Wait for message dialog to open
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                
-                // Find message input and send button using the exact selectors
-                const messageInput = document.querySelector('.msg-form__contenteditable');
-                const sendButton = document.querySelector('.msg-form__send-button');
-                
-                if (!messageInput || !sendButton) {
-                    console.log('Message dialog elements not found');
-                    const closeButton = document.querySelector('.msg-overlay-bubble-header__control');
-                    if (closeButton) closeButton.click();
-                    continue;
-                }
+const handleDiscardDialog = async () => {
+    const discardBtn = document.querySelector('button[data-control-name="discard_conversation"]');
+    if (discardBtn) {
+        console.log('Discard dialog found, clicking discard...');
+        discardBtn.click();
+        await sleep(1000);
+        return true;
+    }
+    return false;
+};
 
-                // Prepare and send message
-                const personalizedMessage = messageTemplate.replace(/{name}/g, name);
-                messageInput.innerHTML = personalizedMessage;
-                
-                // Trigger input event to enable send button
-                messageInput.dispatchEvent(new Event('input', { bubbles: true }));
-                await new Promise(resolve => setTimeout(resolve, 1000));
-
-                if (requireApproval) {
-                    const shouldSend = confirm(\`Send message to \${name}?\`);
-                    if (!shouldSend) {
-                        const closeButton = document.querySelector('.msg-overlay-bubble-header__control');
-                        if (closeButton) closeButton.click();
-                        continue;
-                    }
-                }
-
-                sendButton.click();
-                processed++;
-                
-                console.log(\`Message sent to \${name}\`);
-                
-                // Wait between messages to avoid rate limiting
-                await new Promise(resolve => setTimeout(resolve, 2500));
-                
-                // Close the message dialog if it's still open
-                const closeButton = document.querySelector('.msg-overlay-bubble-header__control');
-                if (closeButton) closeButton.click();
-                
-            } catch (error) {
-                console.error(\`Error processing applicant: \${error.message}\`);
-                continue;
+const closeAllMessageWindows = async () => {
+    // Find all close buttons and close them
+    const closeButtons = document.querySelectorAll('.msg-overlay-bubble-header__control');
+    console.log(\`Found \${closeButtons.length} open message windows to close\`);
+    
+    for (const button of closeButtons) {
+        button.click();
+        await sleep(1000);
+        await handleDiscardDialog();
+    }
+    
+    // Double check no windows remain
+    const remainingWindows = document.querySelectorAll('.msg-overlay-conversation-bubble--is-active');
+    if (remainingWindows.length > 0) {
+        console.log(\`Attempting to close \${remainingWindows.length} remaining windows\`);
+        for (const window of remainingWindows) {
+            const closeBtn = window.querySelector('.msg-overlay-bubble-header__control');
+            if (closeBtn) {
+                closeBtn.click();
+                await sleep(1000);
+                await handleDiscardDialog();
             }
         }
+    }
+    
+    await sleep(1000);
+    return true;
+};
+
+const setMessageContent = async (messageBox, text) => {
+    try {
+        // Focus and clear existing content
+        messageBox.click();
+        await sleep(1000);
+        messageBox.innerHTML = '';
+        await sleep(500);
+
+        // Set new content
+        messageBox.innerHTML = text;
+        messageBox.dispatchEvent(new Event('input', { bubbles: true }));
+        
+        await sleep(1000);
+        return true;
+    } catch (error) {
+        console.error('Error setting message:', error);
+        return false;
+    }
+};
+
+const processApplicant = async (applicant) => {
+    try {
+        // Get applicant name
+        const nameElement = applicant.querySelector('.applicant-name');
+        if (!nameElement) {
+            console.log('Could not find name element');
+            return false;
+        }
+
+        const name = nameElement.textContent.trim();
+        console.log('Processing applicant:', name);
+
+        // Find and click message button
+        const messageButton = applicant.querySelector('.message-button');
+        if (!messageButton) {
+            console.log('Message button not found');
+            return false;
+        }
+
+        // Click message button and wait for dialog
+        messageButton.click();
+        await sleep(2000);
+
+        // Find message input and send button
+        const messageInput = document.querySelector('.msg-form__contenteditable');
+        const sendButton = document.querySelector('.msg-form__send-button');
+        
+        if (!messageInput || !sendButton) {
+            console.log('Message dialog elements not found');
+            await closeAllMessageWindows();
+            return false;
+        }
+
+        // Set message content
+        const personalizedMessage = config.messageTemplate.replace(/{name}/g, name);
+        const contentSet = await setMessageContent(messageInput, personalizedMessage);
+        
+        if (!contentSet) {
+            console.log('Failed to set message content');
+            await closeAllMessageWindows();
+            return false;
+        }
+
+        if (${requireApproval}) {
+            const shouldSend = confirm(\`Send message to \${name}?\`);
+            if (!shouldSend) {
+                console.log('Skipped sending to:', name);
+                await closeAllMessageWindows();
+                return false;
+            }
+        }
+
+        // Send message
+        sendButton.click();
+        console.log('Message sent to:', name);
+        
+        // Wait and close message window
+        await sleep(2000);
+        await closeAllMessageWindows();
+        
+        return true;
+    } catch (error) {
+        console.error('Error processing applicant:', error);
+        await closeAllMessageWindows();
+        return false;
+    }
+};
+
+const processAllApplicants = async () => {
+    try {
+        // Close any existing message windows before starting
+        console.log('Closing all open message windows before starting...');
+        await closeAllMessageWindows();
+        await sleep(2000);
+
+        // Get all applicants
+        const applicants = document.querySelectorAll('.applicant-card');
+        const totalApplicants = applicants.length;
+        
+        if (!totalApplicants) {
+            throw new Error('No applicants found. Make sure you are on the correct LinkedIn page.');
+        }
+
+        // Determine how many to process
+        const limit = config.applicantLimit || totalApplicants;
+        const applicantsToProcess = Math.min(limit, totalApplicants);
+        
+        console.log(\`Found \${totalApplicants} applicants. Will process \${applicantsToProcess}.\`);
+
+        let processed = 0;
+        for (let i = 0; i < applicantsToProcess; i++) {
+            console.log(\`\\nProcessing applicant \${i + 1} of \${applicantsToProcess}\`);
+            
+            // Ensure all message windows are closed before each applicant
+            await closeAllMessageWindows();
+            await sleep(2000);
+            
+            const success = await processApplicant(applicants[i]);
+            if (success) processed++;
+            
+            // Wait between applicants
+            await sleep(config.delayBetweenMessages);
+        }
+
+        // Final cleanup
+        await closeAllMessageWindows();
+        
+        console.log(\`\\nFinished processing applicants\`);
+        console.log(\`Successfully processed \${processed} out of \${applicantsToProcess} applicants\`);
         
         alert(\`Successfully processed \${processed} applicants\`);
-        
     } catch (error) {
-        alert(\`Error: \${error.message}\nPlease make sure you are on the LinkedIn Jobs page showing the list of applicants.\`);
+        alert(\`Error: \${error.message}\`);
         console.error('Script error:', error);
     }
-}
+};
 
-// Run the script
+// Start the process
 console.log('Starting LinkedIn Applicant Messenger...');
-processApplicants().then(() => {
+processAllApplicants().then(() => {
     console.log('Script completed');
 }).catch(error => {
     console.error('Script failed:', error);
