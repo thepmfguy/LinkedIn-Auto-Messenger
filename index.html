@@ -393,20 +393,25 @@ const forceSetMessageContent = async (messageBox, text) => {
         messageBox.click();
         await sleep(500);
         
-        // Force clear content
+        // Force clear content using multiple methods
         messageBox.innerHTML = '';
-        await sleep(500);
-
+        messageBox.textContent = '';
+        messageBox.innerText = '';
+        
         // Force set content using multiple methods
         messageBox.innerHTML = text;
         messageBox.textContent = text;
         messageBox.innerText = text;
         
         // Force trigger events
-        messageBox.dispatchEvent(new Event('input', { bubbles: true }));
-        messageBox.dispatchEvent(new Event('change', { bubbles: true }));
-        messageBox.dispatchEvent(new Event('keydown', { bubbles: true }));
-        messageBox.dispatchEvent(new Event('keyup', { bubbles: true }));
+        const events = ['input', 'change', 'keydown', 'keyup', 'paste', 'compositionend'];
+        events.forEach(eventType => {
+            messageBox.dispatchEvent(new Event(eventType, { bubbles: true }));
+        });
+        
+        // Force focus again
+        messageBox.focus();
+        messageBox.click();
         
         await sleep(1000);
         return true;
@@ -435,6 +440,24 @@ const forceSendMessage = async (sendButton) => {
             }));
         }
         
+        // Try direct form submission
+        if (form) {
+            form.submit();
+        }
+        
+        // Try clicking any visible send buttons
+        const allSendButtons = document.querySelectorAll('button.msg-form__send-button');
+        allSendButtons.forEach(button => {
+            if (isWindowVisible(button)) {
+                button.click();
+                button.dispatchEvent(new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window
+                }));
+            }
+        });
+        
         await sleep(2000);
         return true;
     } catch (error) {
@@ -453,7 +476,7 @@ const processApplicant = async (applicant) => {
         }
 
         const name = nameElement.textContent.trim();
-        console.log('\\nProcessing applicant:', name);
+        console.log('\nProcessing applicant:', name);
 
         // Force close all message windows
         await closeAllMessageWindows();
@@ -486,10 +509,21 @@ const processApplicant = async (applicant) => {
             return false;
         }
 
-        // Force set message content
+        // Force set message content with retries
         console.log('Force setting message content...');
         const personalizedMessage = config.messageTemplate.replace(/{name}/g, name);
-        await forceSetMessageContent(messageInput, personalizedMessage);
+        let messageSet = false;
+        for (let i = 0; i < 3; i++) {
+            messageSet = await forceSetMessageContent(messageInput, personalizedMessage);
+            if (messageSet) break;
+            await sleep(1000);
+        }
+
+        if (!messageSet) {
+            console.log('Failed to set message content after multiple attempts');
+            await closeAllMessageWindows();
+            return false;
+        }
 
         // Only ask for confirmation if requireApproval is true
         if (config.requireApproval) {
@@ -501,19 +535,18 @@ const processApplicant = async (applicant) => {
             }
         }
 
-        // Force send message
+        // Force send message with retries
         console.log('Force sending message...');
-        await forceSendMessage(sendButton);
-
-        // Force verify message was sent
-        let messageSent = !document.querySelector('div.msg-form__contenteditable[contenteditable="true"][role="textbox"]');
-        
-        if (!messageSent) {
-            console.log('Message not sent, forcing retry...');
-            // Force retry
+        let messageSent = false;
+        for (let i = 0; i < 3; i++) {
             await forceSendMessage(sendButton);
             await sleep(2000);
+            
+            // Check if message was sent
             messageSent = !document.querySelector('div.msg-form__contenteditable[contenteditable="true"][role="textbox"]');
+            if (messageSent) break;
+            
+            console.log(\`Retry \${i + 1} of sending message...\`);
         }
 
         if (messageSent) {

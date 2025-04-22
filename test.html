@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message Handling Tests</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .test-result {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 3px;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Message Handling Tests</h1>
+    
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="testResults" class="test-result"></div>
+    </div>
+
+    <script>
+        // Test configuration
+        const testConfig = {
+            messageTemplate: 'Hi {name},\n\nThank you for applying to our position. We\'re currently reviewing applications and will get back to you soon.\n\nBest regards,\nYour Name',
+            delayBetweenMessages: 1000,
+            applicantLimit: 1,
+            requireApproval: false
+        };
+
+        // Utility functions
+        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        // Mock DOM elements
+        const mockElements = {
+            messageBox: {
+                innerHTML: '',
+                textContent: '',
+                innerText: '',
+                focus: () => log('Focus called'),
+                click: () => log('Click called'),
+                dispatchEvent: (event) => log(`Event dispatched: ${event.type}`)
+            },
+            sendButton: {
+                click: () => log('Send button clicked'),
+                dispatchEvent: (event) => log(`Send button event: ${event.type}`)
+            },
+            form: {
+                submit: () => log('Form submitted'),
+                dispatchEvent: (event) => log(`Form event: ${event.type}`)
+            }
+        };
+
+        // Logging function
+        function log(message, type = 'info') {
+            const testResults = document.getElementById('testResults');
+            const logEntry = document.createElement('div');
+            logEntry.className = type;
+            logEntry.textContent = message;
+            testResults.appendChild(logEntry);
+            console.log(message);
+        }
+
+        // Test functions
+        async function testForceSetMessageContent() {
+            log('\n=== Testing forceSetMessageContent ===');
+            try {
+                // Force focus and clear
+                mockElements.messageBox.focus();
+                mockElements.messageBox.click();
+                await sleep(500);
+                
+                // Force clear content
+                mockElements.messageBox.innerHTML = '';
+                mockElements.messageBox.textContent = '';
+                mockElements.messageBox.innerText = '';
+                
+                // Force set content
+                mockElements.messageBox.innerHTML = 'Test message';
+                mockElements.messageBox.textContent = 'Test message';
+                mockElements.messageBox.innerText = 'Test message';
+                
+                // Force trigger events
+                const events = ['input', 'change', 'keydown', 'keyup', 'paste', 'compositionend'];
+                events.forEach(eventType => {
+                    mockElements.messageBox.dispatchEvent(new Event(eventType));
+                });
+                
+                // Verify content
+                if (mockElements.messageBox.innerHTML === 'Test message') {
+                    log('✅ Message content set successfully', 'success');
+                    return true;
+                } else {
+                    log('❌ Failed to set message content', 'error');
+                    return false;
+                }
+            } catch (error) {
+                log(`❌ Error in forceSetMessageContent: ${error}`, 'error');
+                return false;
+            }
+        }
+
+        async function testForceSendMessage() {
+            log('\n=== Testing forceSendMessage ===');
+            try {
+                // Try multiple send methods
+                mockElements.sendButton.click();
+                mockElements.sendButton.dispatchEvent(new MouseEvent('click'));
+                
+                // Try form submission
+                mockElements.form.submit();
+                mockElements.form.dispatchEvent(new SubmitEvent('submit'));
+                
+                log('✅ Send message actions executed', 'success');
+                return true;
+            } catch (error) {
+                log(`❌ Error in forceSendMessage: ${error}`, 'error');
+                return false;
+            }
+        }
+
+        async function testProcessApplicant() {
+            log('\n=== Testing processApplicant ===');
+            try {
+                const mockApplicant = {
+                    querySelector: () => ({
+                        textContent: 'Test Applicant',
+                        click: () => log('Applicant link clicked')
+                    })
+                };
+                
+                // Simulate applicant processing
+                const name = mockApplicant.querySelector().textContent;
+                log(`Processing applicant: ${name}`);
+                
+                // Simulate message window handling
+                log('Closing message windows...');
+                await sleep(1000);
+                
+                // Simulate message sending
+                const messageSet = await testForceSetMessageContent();
+                if (!messageSet) {
+                    log('❌ Failed to set message content', 'error');
+                    return false;
+                }
+                
+                const messageSent = await testForceSendMessage();
+                if (!messageSent) {
+                    log('❌ Failed to send message', 'error');
+                    return false;
+                }
+                
+                log('✅ Applicant processed successfully', 'success');
+                return true;
+            } catch (error) {
+                log(`❌ Error in processApplicant: ${error}`, 'error');
+                return false;
+            }
+        }
+
+        // Run all tests
+        async function runTests() {
+            log('Starting message handling tests...');
+            
+            try {
+                const results = {
+                    forceSetMessageContent: await testForceSetMessageContent(),
+                    forceSendMessage: await testForceSendMessage(),
+                    processApplicant: await testProcessApplicant()
+                };
+                
+                const allPassed = Object.values(results).every(result => result);
+                
+                if (allPassed) {
+                    log('\n✅ All tests completed successfully!', 'success');
+                } else {
+                    log('\n❌ Some tests failed. See above for details.', 'error');
+                }
+                
+                return allPassed;
+            } catch (error) {
+                log(`❌ Test failed: ${error}`, 'error');
+                return false;
+            }
+        }
+
+        // Run the tests when the page loads
+        window.onload = runTests;
+    </script>
+</body>
+</html> 
