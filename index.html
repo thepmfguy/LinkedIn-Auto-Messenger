@@ -453,13 +453,13 @@ const processApplicant = async (applicant) => {
 
         // Close any existing message windows, but not the active one
         await closeAllMessageWindows(true);
-        await sleep(1000);
+        await sleep(2000);
 
         // Click the applicant to ensure their profile is active
         const applicantLink = applicant.querySelector('a');
         if (applicantLink) {
             applicantLink.click();
-            await sleep(2000);
+            await sleep(3000); // Increased wait time
         }
 
         // Find and click message button
@@ -470,7 +470,7 @@ const processApplicant = async (applicant) => {
         }
 
         messageButton.click();
-        await sleep(2000);
+        await sleep(3000); // Increased wait time
 
         // Find message input and send button
         const messageInput = document.querySelector('div.msg-form__contenteditable[contenteditable="true"][role="textbox"]');
@@ -503,26 +503,39 @@ const processApplicant = async (applicant) => {
             }
         }
 
-        // Send message
-        console.log('Clicking send button...');
-        sendButton.click();
-        await sleep(2000);
-        
-        // Verify message was sent
-        const messageSent = !document.querySelector('div.msg-form__contenteditable[contenteditable="true"][role="textbox"]');
+        // Send message with multiple attempts
+        console.log('Attempting to send message...');
+        let messageSent = false;
+        let attempts = 0;
+        const maxAttempts = 3;
+
+        while (!messageSent && attempts < maxAttempts) {
+            attempts++;
+            console.log(\`Send attempt \${attempts} of \${maxAttempts}\`);
+            
+            // Click send button
+            sendButton.click();
+            await sleep(2000);
+            
+            // Verify message was sent
+            messageSent = !document.querySelector('div.msg-form__contenteditable[contenteditable="true"][role="textbox"]');
+            
+            if (!messageSent) {
+                console.log('Message not sent, retrying...');
+                await sleep(1000);
+            }
+        }
+
         if (messageSent) {
             console.log('Message sent successfully to:', name);
         } else {
-            console.log('Send button clicked but message may not have been sent');
-            // Try clicking send button again
-            sendButton.click();
-            await sleep(2000);
+            console.log('Failed to send message after', maxAttempts, 'attempts');
         }
         
-        // Now that we've sent the message, close all windows including active ones
+        // Now that we've sent the message (or failed), close all windows
         await closeAllMessageWindows(false);
         
-        return true;
+        return messageSent;
     } catch (error) {
         console.error('Error processing applicant:', error);
         await closeAllMessageWindows();
