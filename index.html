@@ -264,55 +264,104 @@
             const requireApproval = document.getElementById('approvalToggle').checked;
             
             const script = `// LinkedIn Applicant Messenger Script
-const messageTemplate = \`${message}\`;
-const applicantLimit = ${applicantLimit};
-const requireApproval = ${requireApproval};
-
 async function processApplicants() {
-    const applicants = document.querySelectorAll('.applicant-card');
-    let processed = 0;
+    try {
+        const applicantLimit = ${applicantLimit};
+        const requireApproval = ${requireApproval};
+        const messageTemplate = \`${message}\`;
+        
+        // Wait for the applicant list to load
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Find all applicant cards
+        const applicants = document.querySelectorAll('li.artdeco-list__item');
+        if (!applicants.length) {
+            throw new Error('No applicants found. Make sure you are on the correct LinkedIn page.');
+        }
+        
+        let processed = 0;
+        console.log(\`Found \${applicants.length} applicants. Will process up to \${applicantLimit} applicants.\`);
 
-    for (const applicant of applicants) {
-        if (processed >= applicantLimit) break;
+        for (const applicant of applicants) {
+            if (processed >= applicantLimit) break;
 
-        try {
-            const name = applicant.querySelector('.applicant-name').textContent.trim();
-            const message = messageTemplate.replace(/{name}/g, name);
-            
-            const messageButton = applicant.querySelector('.message-button');
-            messageButton.click();
-            
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            const messageInput = document.querySelector('.msg-form__contenteditable');
-            if (messageInput) {
-                messageInput.innerHTML = message;
-                messageInput.dispatchEvent(new Event('input', { bubbles: true }));
+            try {
+                // Get applicant name
+                const nameElement = applicant.querySelector('.artdeco-entity-lockup__title');
+                if (!nameElement) continue;
                 
+                const name = nameElement.textContent.trim().split('\\n')[0];
+                console.log(\`Processing applicant: \${name}\`);
+
+                // Find and click message button
+                const messageButton = applicant.querySelector('button[aria-label^="Message"]');
+                if (!messageButton) {
+                    console.log(\`No message button found for \${name}\`);
+                    continue;
+                }
+                messageButton.click();
+                
+                // Wait for message dialog to open
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // Find message input and send button
+                const messageInput = document.querySelector('.msg-form__contenteditable[contenteditable="true"]');
+                const sendButton = document.querySelector('button.msg-form__send-button');
+                
+                if (!messageInput || !sendButton) {
+                    console.log('Message dialog elements not found');
+                    continue;
+                }
+
+                // Prepare and send message
+                const personalizedMessage = messageTemplate.replace(/{name}/g, name);
+                messageInput.innerHTML = personalizedMessage;
+                
+                // Trigger input event to enable send button
+                messageInput.dispatchEvent(new Event('input', { bubbles: true }));
+                await new Promise(resolve => setTimeout(resolve, 500));
+
                 if (requireApproval) {
-                    const shouldSend = confirm('Send message to ' + name + '?');
+                    const shouldSend = confirm(\`Send message to \${name}?\`);
                     if (!shouldSend) {
-                        const closeButton = document.querySelector('.msg-overlay-bubble-header__control');
+                        const closeButton = document.querySelector('button[data-control-name="overlay.close_conversation_window"]');
                         if (closeButton) closeButton.click();
                         continue;
                     }
                 }
-                
-                const sendButton = document.querySelector('.msg-form__send-button');
-                if (sendButton) sendButton.click();
-                
-                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                sendButton.click();
                 processed++;
+                
+                console.log(\`Message sent to \${name}\`);
+                
+                // Wait between messages to avoid rate limiting
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Close the message dialog if it's still open
+                const closeButton = document.querySelector('button[data-control-name="overlay.close_conversation_window"]');
+                if (closeButton) closeButton.click();
+                
+            } catch (error) {
+                console.error(\`Error processing applicant: \${error.message}\`);
+                continue;
             }
-        } catch (error) {
-            console.error('Error processing applicant:', error);
         }
+        
+        alert(\`Successfully processed \${processed} applicants\`);
+        
+    } catch (error) {
+        alert(\`Error: \${error.message}\`);
+        console.error('Script error:', error);
     }
-    
-    alert(\`Processed \${processed} applicants\`);
 }
 
-processApplicants();`;
+// Run the script
+processApplicants().then(() => {
+    console.log('Script completed');
+}).catch(error => {
+    console.error('Script failed:', error);
+});`;
 
             const scriptCard = document.getElementById('scriptCard');
             const scriptContent = document.getElementById('scriptContent');
