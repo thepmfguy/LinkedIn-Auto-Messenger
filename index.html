@@ -409,29 +409,6 @@ const setMessageContent = async (messageBox, text) => {
         const contentLength = messageBox.textContent.length;
         console.log('Message content length:', contentLength);
         
-        // If content wasn't set, try alternative method
-        if (contentLength === 0) {
-            console.log('Trying alternative method to set content...');
-            
-            // Try using execCommand
-            document.execCommand('selectAll', false, null);
-            document.execCommand('delete', false, null);
-            await sleep(500);
-            
-            // Try direct textContent
-            messageBox.textContent = text;
-            await sleep(500);
-            
-            // Try innerText
-            messageBox.innerText = text;
-            await sleep(500);
-            
-            // Final verification
-            const finalLength = messageBox.textContent.length;
-            console.log('Final message content length:', finalLength);
-            return finalLength > 0;
-        }
-        
         return contentLength > 0;
     } catch (error) {
         console.error('Error setting message:', error);
@@ -485,19 +462,13 @@ const processApplicant = async (applicant) => {
         // Set message content
         console.log('Setting message content...');
         const personalizedMessage = config.messageTemplate.replace(/{name}/g, name);
+        const contentSet = await setMessageContent(messageInput, personalizedMessage);
         
-        // Clear existing content
-        messageInput.innerHTML = '';
-        await sleep(500);
-        
-        // Set new content
-        messageInput.innerHTML = personalizedMessage;
-        await sleep(500);
-        
-        // Trigger input events
-        messageInput.dispatchEvent(new Event('input', { bubbles: true }));
-        messageInput.dispatchEvent(new Event('change', { bubbles: true }));
-        await sleep(1000);
+        if (!contentSet) {
+            console.log('Failed to set message content');
+            await closeAllMessageWindows();
+            return false;
+        }
 
         // Only ask for confirmation if requireApproval is true
         if (config.requireApproval) {
@@ -512,8 +483,15 @@ const processApplicant = async (applicant) => {
         // Send message
         console.log('Sending message...');
         
-        // First try direct button click
-        sendButton.click();
+        // Create a new mouse event
+        const clickEvent = new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            view: window
+        });
+        
+        // Dispatch the click event
+        sendButton.dispatchEvent(clickEvent);
         await sleep(2000);
 
         // Check if message was sent
@@ -526,7 +504,7 @@ const processApplicant = async (applicant) => {
             const form = document.querySelector('form.msg-form');
             if (form) {
                 // Create and dispatch submit event
-                const submitEvent = new Event('submit', {
+                const submitEvent = new SubmitEvent('submit', {
                     bubbles: true,
                     cancelable: true
                 });
