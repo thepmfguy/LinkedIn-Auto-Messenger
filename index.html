@@ -268,11 +268,12 @@
             let formattedMessage = '';
             message.ops.forEach(op => {
                 if (op.insert) {
-                    // Escape backticks and preserve line breaks
+                    // Escape backticks, newlines, and other special characters
                     formattedMessage += op.insert
                         .replace(/`/g, '\\`')
                         .replace(/\n/g, '\\n')
-                        .replace(/\$/g, '\\$');
+                        .replace(/\$/g, '\\$')
+                        .replace(/\\/g, '\\\\');
                 }
             });
             
