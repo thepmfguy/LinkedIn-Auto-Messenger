@@ -485,13 +485,19 @@ const processApplicant = async (applicant) => {
         // Set message content
         console.log('Setting message content...');
         const personalizedMessage = config.messageTemplate.replace(/{name}/g, name);
-        const contentSet = await setMessageContent(messageInput, personalizedMessage);
         
-        if (!contentSet) {
-            console.log('Failed to set message content');
-            await closeAllMessageWindows();
-            return false;
-        }
+        // Clear existing content
+        messageInput.innerHTML = '';
+        await sleep(500);
+        
+        // Set new content
+        messageInput.innerHTML = personalizedMessage;
+        await sleep(500);
+        
+        // Trigger input events
+        messageInput.dispatchEvent(new Event('input', { bubbles: true }));
+        messageInput.dispatchEvent(new Event('change', { bubbles: true }));
+        await sleep(1000);
 
         // Only ask for confirmation if requireApproval is true
         if (config.requireApproval) {
@@ -505,42 +511,39 @@ const processApplicant = async (applicant) => {
 
         // Send message
         console.log('Sending message...');
+        
+        // First try direct button click
         sendButton.click();
         await sleep(2000);
 
-        // Verify message was sent by checking multiple indicators
-        const messageSent = !document.querySelector('div.msg-form__contenteditable[contenteditable="true"][role="textbox"]') &&
-            !document.querySelector('button.msg-form__send-button.artdeco-button--1[type="submit"]') &&
-            document.querySelector('.msg-s-message-list__event-bubble--sent');
+        // Check if message was sent
+        let messageSent = !document.querySelector('div.msg-form__contenteditable[contenteditable="true"][role="textbox"]');
+        
+        if (!messageSent) {
+            console.log('Message not sent, trying form submit...');
+            
+            // Try form submit
+            const form = document.querySelector('form.msg-form');
+            if (form) {
+                // Create and dispatch submit event
+                const submitEvent = new Event('submit', {
+                    bubbles: true,
+                    cancelable: true
+                });
+                form.dispatchEvent(submitEvent);
+                await sleep(2000);
+                
+                // Check again
+                messageSent = !document.querySelector('div.msg-form__contenteditable[contenteditable="true"][role="textbox"]');
+            }
+        }
 
         if (messageSent) {
             console.log('Message sent successfully to:', name);
-            await sleep(1000); // Wait for message to be fully sent
+            await sleep(1000);
             await closeAllMessageWindows();
             return true;
         } else {
-            console.log('Message not sent, retrying...');
-            
-            // Try alternative method
-            const form = document.querySelector('form.msg-form');
-            if (form) {
-                console.log('Trying form submit...');
-                form.dispatchEvent(new Event('submit', { bubbles: true }));
-                await sleep(2000);
-                
-                // Verify again
-                const retrySent = !document.querySelector('div.msg-form__contenteditable[contenteditable="true"][role="textbox"]') &&
-                    !document.querySelector('button.msg-form__send-button.artdeco-button--1[type="submit"]') &&
-                    document.querySelector('.msg-s-message-list__event-bubble--sent');
-                
-                if (retrySent) {
-                    console.log('Message sent successfully on retry to:', name);
-                    await sleep(1000);
-                    await closeAllMessageWindows();
-                    return true;
-                }
-            }
-            
             console.log('Failed to send message to:', name);
             await closeAllMessageWindows();
             return false;
