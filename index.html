@@ -31,6 +31,9 @@
                     fontFamily: {
                         sans: ['Inter', 'system-ui', 'sans-serif'],
                     },
+                    borderRadius: {
+                        DEFAULT: '0.7rem',
+                    },
                 }
             }
         }
@@ -164,66 +167,53 @@
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen font-sans">
-    <div class="natural-gradient min-h-screen py-12">
+    <div class="min-h-screen py-12">
         <div class="container mx-auto px-4 max-w-5xl">
             <!-- Main Content Section -->
-            <div class="text-center mb-12 animate-fade-in">
-                <h1 class="text-6xl font-bold mb-6 gradient-text">LinkedIn Applicant Messenger</h1>
-                <p class="text-xl text-gray-600">Automate your applicant messaging with personalized templates</p>
+            <div class="text-center mb-12">
+                <h1 class="text-4xl font-bold text-gray-900 mb-4">LinkedIn Applicant Messenger</h1>
+                <p class="text-lg text-gray-600">Automate your applicant messaging with personalized templates</p>
             </div>
 
             <!-- Message Template Section -->
-            <div class="glass-card rounded-2xl p-8 mb-8 animate-fade-in hover-scale">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-8 mb-8">
                 <div class="space-y-8">
                     <div>
-                        <label for="messageTemplate" class="block text-lg font-medium text-gray-700 mb-3">
+                        <label for="messageTemplate" class="block text-base font-medium text-gray-700 mb-2">
                             Message Template
                         </label>
-                        <p class="text-gray-500 mb-4">Use {firstName} to personalize your message for each applicant</p>
+                        <p class="text-sm text-gray-500 mb-4">Use {firstName} to personalize your message for each applicant</p>
                         <textarea 
                             id="messageTemplate" 
-                            class="message-box w-full px-6 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 shadow-sm bg-white"
-                        >Hi {firstName},
-
-Thanks for applying for the Tars Content Writer Internship.
-
-Please talk to this Application Qualifying Agent: https://chatbot.hellotars.com/conv/w28F1a
-
-It will ask you all the basic qualifying questions. If you qualify, it will give you a detailed content writing assignment.
-
-For ease of access, content Writing Assignment Details here: https://hellotars.notion.site/Content-Marketing-Tars-Assignment-1-c16e8cb2d3b644918d76c81fccaac1ac?pvs=4
-
-You need to submit the assignment to us within the next 3 days from now, to qualify for the next Phone Screen round.
-
-All the best :)
-Regards
-Gaurav</textarea>
+                            class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 shadow-sm bg-white"
+                            placeholder="Enter your message template here..."
+                        >Hey {firstName},</textarea>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div class="glass-card rounded-xl p-6">
-                            <label for="applicantLimit" class="block text-lg font-medium text-gray-700 mb-3">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-lg border border-gray-100 p-6">
+                            <label for="applicantLimit" class="block text-base font-medium text-gray-700 mb-2">
                                 Applicant Limit
                             </label>
-                            <p class="text-gray-500 mb-4">Leave empty to process all applicants</p>
+                            <p class="text-sm text-gray-500 mb-4">Leave empty to process all applicants</p>
                             <input 
                                 type="number" 
                                 id="applicantLimit" 
                                 min="1" 
                                 placeholder="Optional"
-                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 shadow-sm bg-white"
+                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 shadow-sm bg-white"
                             >
                         </div>
 
-                        <div class="glass-card rounded-xl p-6">
-                            <label class="block text-lg font-medium text-gray-700 mb-3">
+                        <div class="bg-white rounded-lg border border-gray-100 p-6">
+                            <label class="block text-base font-medium text-gray-700 mb-2">
                                 Message Approval
                             </label>
-                            <p class="text-gray-500 mb-4">Require confirmation before sending each message</p>
+                            <p class="text-sm text-gray-500 mb-4">Require confirmation before sending each message</p>
                             <div class="flex items-center space-x-3">
-                                <label class="toggle-switch">
-                                    <input type="checkbox" id="requireApproval" checked>
-                                    <span class="toggle-slider"></span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="requireApproval" class="sr-only peer" checked>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-500 rounded-lg peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
                                 </label>
                                 <span class="text-sm text-gray-600" id="approvalStatus">Enabled</span>
                             </div>
@@ -233,7 +223,7 @@ Gaurav</textarea>
                     <div class="flex justify-end">
                         <button 
                             id="generateBtn" 
-                            class="px-8 py-4 bg-primary-600 text-white rounded-xl hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all duration-200 transform hover:-translate-y-1 hover:shadow-lg"
+                            class="px-6 py-3 bg-primary-500 text-white rounded-lg hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors"
                         >
                             Generate Script
                         </button>
@@ -242,77 +232,77 @@ Gaurav</textarea>
             </div>
 
             <!-- Generated Script Section -->
-            <div id="scriptCard" class="glass-card rounded-2xl p-8 hidden animate-fade-in hover-scale">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">Your Custom Script</h2>
-                <p class="text-gray-600 mb-6">Copy and paste this into your browser's console on the LinkedIn job applications page:</p>
+            <div id="scriptCard" class="bg-white rounded-lg shadow-sm border border-gray-100 p-8 hidden">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Your Custom Script</h2>
+                <p class="text-sm text-gray-600 mb-6">Copy and paste this into your browser's console on the LinkedIn job applications page:</p>
                 
-                <div class="rounded-xl overflow-hidden border border-gray-200">
-                    <div class="flex justify-between items-center bg-gray-900 px-6 py-4 border-b border-gray-700">
+                <div class="rounded-lg overflow-hidden border border-gray-200">
+                    <div class="flex justify-between items-center bg-gray-900 px-4 py-3 border-b border-gray-700">
                         <div class="flex items-center space-x-2">
                             <div class="w-3 h-3 rounded-full bg-red-500"></div>
                             <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
                             <div class="w-3 h-3 rounded-full bg-green-500"></div>
                         </div>
                         <div class="flex items-center">
-                            <span id="copySuccess" class="text-green-400 font-medium mr-3 hidden animate-fade-in">Copied!</span>
+                            <span id="copySuccess" class="text-green-400 text-sm font-medium mr-3 hidden">Copied!</span>
                             <button 
                                 id="copyBtn" 
-                                class="px-4 py-2 text-sm bg-gray-800 text-white rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all duration-200"
+                                class="px-4 py-2 text-sm bg-gray-800 text-white rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors"
                             >
                                 Copy Script
                             </button>
                         </div>
                     </div>
-                    <pre class="code-box"><code id="scriptContent" class="language-javascript"></code></pre>
+                    <pre class="max-h-[500px] overflow-y-auto"><code id="scriptContent" class="language-javascript"></code></pre>
                 </div>
             </div>
 
             <!-- Instructions Section -->
-            <div class="mt-16 space-y-8">
-                <div class="glass-card rounded-2xl p-8 animate-fade-in hover-scale">
-                    <h3 class="text-2xl font-bold text-gray-800 mb-6">Quick Start Guide</h3>
+            <div class="mt-12 space-y-6">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-8">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-6">Quick Start Guide</h3>
                     <ol class="list-none space-y-4 text-gray-700">
-                        <li class="flex items-center space-x-4 animate-slide-in" style="animation-delay: 0.1s">
-                            <span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center font-semibold">1</span>
+                        <li class="flex items-center space-x-4">
+                            <span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-50 text-primary-600 flex items-center justify-center font-semibold">1</span>
                             <span>Customize your message template above</span>
                         </li>
-                        <li class="flex items-center space-x-4 animate-slide-in" style="animation-delay: 0.2s">
-                            <span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center font-semibold">2</span>
+                        <li class="flex items-center space-x-4">
+                            <span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-50 text-primary-600 flex items-center justify-center font-semibold">2</span>
                             <span>Set your preferred options</span>
                         </li>
-                        <li class="flex items-center space-x-4 animate-slide-in" style="animation-delay: 0.3s">
-                            <span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center font-semibold">3</span>
+                        <li class="flex items-center space-x-4">
+                            <span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-50 text-primary-600 flex items-center justify-center font-semibold">3</span>
                             <span>Click "Generate Script" to create your automation script</span>
                         </li>
-                        <li class="flex items-center space-x-4 animate-slide-in" style="animation-delay: 0.4s">
-                            <span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center font-semibold">4</span>
+                        <li class="flex items-center space-x-4">
+                            <span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-50 text-primary-600 flex items-center justify-center font-semibold">4</span>
                             <span>Copy the generated script</span>
                         </li>
                     </ol>
                 </div>
 
-                <div class="glass-card rounded-2xl p-8 animate-fade-in hover-scale">
-                    <h3 class="text-2xl font-bold text-gray-800 mb-6">Detailed Instructions</h3>
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-8">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-6">Detailed Instructions</h3>
                     <div class="space-y-6 text-gray-700">
-                        <div class="animate-slide-in" style="animation-delay: 0.1s">
-                            <h4 class="font-semibold text-lg mb-2">1. Prepare LinkedIn</h4>
-                            <p>Visit your LinkedIn job post and navigate to the view where all candidates are shown</p>
+                        <div>
+                            <h4 class="font-medium text-base mb-2">1. Prepare LinkedIn</h4>
+                            <p class="text-sm">Visit your LinkedIn job post and navigate to the view where all candidates are shown</p>
                         </div>
-                        <div class="animate-slide-in" style="animation-delay: 0.2s">
-                            <h4 class="font-semibold text-lg mb-2">2. Open Developer Console</h4>
-                            <p>Press F12 or right-click and select "Inspect" to open Developer Tools, then click on the "Console" tab</p>
+                        <div>
+                            <h4 class="font-medium text-base mb-2">2. Open Developer Console</h4>
+                            <p class="text-sm">Press F12 or right-click and select "Inspect" to open Developer Tools, then click on the "Console" tab</p>
                         </div>
-                        <div class="animate-slide-in" style="animation-delay: 0.3s">
-                            <h4 class="font-semibold text-lg mb-2">3. Enable Pasting</h4>
-                            <p>If this is your first time, type "allow pasting" in the console when prompted</p>
+                        <div>
+                            <h4 class="font-medium text-base mb-2">3. Enable Pasting</h4>
+                            <p class="text-sm">If this is your first time, type "allow pasting" in the console when prompted</p>
                         </div>
-                        <div class="animate-slide-in" style="animation-delay: 0.4s">
-                            <h4 class="font-semibold text-lg mb-2">4. Run the Script</h4>
-                            <p>Paste the generated script and press Enter to start the automation</p>
+                        <div>
+                            <h4 class="font-medium text-base mb-2">4. Run the Script</h4>
+                            <p class="text-sm">Paste the generated script and press Enter to start the automation</p>
                         </div>
-                        <div class="animate-slide-in" style="animation-delay: 0.5s">
-                            <h4 class="font-semibold text-lg mb-2">5. Multiple Pages</h4>
-                            <p>Remember to run the script again when you navigate to the next page of applicants</p>
+                        <div>
+                            <h4 class="font-medium text-base mb-2">5. Multiple Pages</h4>
+                            <p class="text-sm">Remember to run the script again when you navigate to the next page of applicants</p>
                         </div>
                     </div>
                 </div>
@@ -320,9 +310,9 @@ Gaurav</textarea>
         </div>
     </div>
 
-    <footer class="bg-gray-900 text-white py-8 mt-12">
+    <footer class="bg-white border-t border-gray-100 py-6 mt-12">
         <div class="container mx-auto px-4 text-center">
-            <p>Access this tool at: <a href="https://your-domain.com" class="text-primary-300 hover:text-primary-200 font-medium transition-colors">https://your-domain.com</a></p>
+            <p class="text-sm text-gray-600">Access this tool at: <a href="https://your-domain.com" class="text-primary-500 hover:text-primary-600 font-medium">https://your-domain.com</a></p>
         </div>
     </footer>
 
