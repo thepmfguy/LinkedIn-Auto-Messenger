@@ -451,8 +451,8 @@ const processApplicant = async (applicant) => {
         const name = nameElement.textContent.trim();
         console.log('\\nProcessing applicant:', name);
 
-        // Close any existing message windows, but not the active one
-        await closeAllMessageWindows(true);
+        // Close any existing message windows
+        await closeAllMessageWindows();
         await sleep(2000);
 
         // Click the applicant to ensure their profile is active
@@ -503,74 +503,48 @@ const processApplicant = async (applicant) => {
             }
         }
 
-        // Send message with multiple attempts
-        console.log('Attempting to send message...');
-        let messageSent = false;
-        let attempts = 0;
-        const maxAttempts = 3;
+        // Send message
+        console.log('Sending message...');
+        sendButton.click();
+        await sleep(2000);
 
-        while (!messageSent && attempts < maxAttempts) {
-            attempts++;
-            console.log(\`Send attempt \${attempts} of \${maxAttempts}\`);
-            
-            // Check if send button is enabled and has the correct class
-            const isSendButtonEnabled = !sendButton.disabled && 
-                sendButton.classList.contains('msg-form__send-button') && 
-                sendButton.classList.contains('artdeco-button--1');
-                
-            if (!isSendButtonEnabled) {
-                console.log('Send button is not in correct state, checking form...');
-                
-                // Re-focus the message input
-                messageInput.focus();
-                await sleep(1000);
-                
-                // Re-verify content
-                if (messageInput.textContent.length === 0) {
-                    console.log('Content was cleared, re-setting...');
-                    messageInput.innerHTML = personalizedMessage;
-                    await sleep(1000);
-                }
-                
-                // Wait for button to become enabled
-                await sleep(2000);
-            }
-            
-            // Click send button
-            console.log('Clicking send button...');
-            sendButton.click();
-            await sleep(2000);
-            
-            // Verify message was sent
-            messageSent = !document.querySelector('div.msg-form__contenteditable[contenteditable="true"][role="textbox"]');
-            
-            if (!messageSent) {
-                console.log('Message not sent, retrying...');
-                // Try alternative send method
-                const form = document.querySelector('form.msg-form');
-                if (form) {
-                    console.log('Trying form submit...');
-                    form.dispatchEvent(new Event('submit', { bubbles: true }));
-                    await sleep(2000);
-                    messageSent = !document.querySelector('div.msg-form__contenteditable[contenteditable="true"][role="textbox"]');
-                }
-                
-                if (!messageSent) {
-                    await sleep(1000);
-                }
-            }
-        }
+        // Verify message was sent by checking multiple indicators
+        const messageSent = !document.querySelector('div.msg-form__contenteditable[contenteditable="true"][role="textbox"]') &&
+            !document.querySelector('button.msg-form__send-button.artdeco-button--1[type="submit"]') &&
+            document.querySelector('.msg-s-message-list__event-bubble--sent');
 
         if (messageSent) {
             console.log('Message sent successfully to:', name);
+            await sleep(1000); // Wait for message to be fully sent
+            await closeAllMessageWindows();
+            return true;
         } else {
-            console.log('Failed to send message after', maxAttempts, 'attempts');
+            console.log('Message not sent, retrying...');
+            
+            // Try alternative method
+            const form = document.querySelector('form.msg-form');
+            if (form) {
+                console.log('Trying form submit...');
+                form.dispatchEvent(new Event('submit', { bubbles: true }));
+                await sleep(2000);
+                
+                // Verify again
+                const retrySent = !document.querySelector('div.msg-form__contenteditable[contenteditable="true"][role="textbox"]') &&
+                    !document.querySelector('button.msg-form__send-button.artdeco-button--1[type="submit"]') &&
+                    document.querySelector('.msg-s-message-list__event-bubble--sent');
+                
+                if (retrySent) {
+                    console.log('Message sent successfully on retry to:', name);
+                    await sleep(1000);
+                    await closeAllMessageWindows();
+                    return true;
+                }
+            }
+            
+            console.log('Failed to send message to:', name);
+            await closeAllMessageWindows();
+            return false;
         }
-        
-        // Now that we've sent the message (or failed), close all windows
-        await closeAllMessageWindows(false);
-        
-        return messageSent;
     } catch (error) {
         console.error('Error processing applicant:', error);
         await closeAllMessageWindows();
