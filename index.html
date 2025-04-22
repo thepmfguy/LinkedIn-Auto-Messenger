@@ -386,32 +386,59 @@ const closeAllMessageWindows = async (excludeActive = false) => {
     return true;
 };
 
-const setMessageContent = async (messageBox, text) => {
+const forceSetMessageContent = async (messageBox, text) => {
     try {
-        // Focus and clear existing content
+        // Force focus and clear
         messageBox.focus();
         messageBox.click();
-        await sleep(1000);
+        await sleep(500);
         
-        // Clear existing content
+        // Force clear content
         messageBox.innerHTML = '';
         await sleep(500);
 
-        // Set new content using innerHTML
+        // Force set content using multiple methods
         messageBox.innerHTML = text;
+        messageBox.textContent = text;
+        messageBox.innerText = text;
         
-        // Trigger input events
+        // Force trigger events
         messageBox.dispatchEvent(new Event('input', { bubbles: true }));
         messageBox.dispatchEvent(new Event('change', { bubbles: true }));
+        messageBox.dispatchEvent(new Event('keydown', { bubbles: true }));
+        messageBox.dispatchEvent(new Event('keyup', { bubbles: true }));
         
-        // Verify content was set
         await sleep(1000);
-        const contentLength = messageBox.textContent.length;
-        console.log('Message content length:', contentLength);
-        
-        return contentLength > 0;
+        return true;
     } catch (error) {
-        console.error('Error setting message:', error);
+        console.error('Error in forceSetMessageContent:', error);
+        return false;
+    }
+};
+
+const forceSendMessage = async (sendButton) => {
+    try {
+        // Force click using multiple methods
+        sendButton.click();
+        sendButton.dispatchEvent(new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            view: window
+        }));
+        
+        // Try form submit
+        const form = document.querySelector('form.msg-form');
+        if (form) {
+            form.dispatchEvent(new SubmitEvent('submit', {
+                bubbles: true,
+                cancelable: true
+            }));
+        }
+        
+        await sleep(2000);
+        return true;
+    } catch (error) {
+        console.error('Error in forceSendMessage:', error);
         return false;
     }
 };
@@ -428,18 +455,18 @@ const processApplicant = async (applicant) => {
         const name = nameElement.textContent.trim();
         console.log('\\nProcessing applicant:', name);
 
-        // Close any existing message windows
+        // Force close all message windows
         await closeAllMessageWindows();
         await sleep(2000);
 
-        // Click the applicant to ensure their profile is active
+        // Force click applicant
         const applicantLink = applicant.querySelector('a');
         if (applicantLink) {
             applicantLink.click();
             await sleep(3000);
         }
 
-        // Find and click message button
+        // Force click message button
         const messageButton = document.querySelector('button[data-view-name="hiring-applicant-contact-message"]');
         if (!messageButton) {
             console.log('Message button not found');
@@ -459,16 +486,10 @@ const processApplicant = async (applicant) => {
             return false;
         }
 
-        // Set message content
-        console.log('Setting message content...');
+        // Force set message content
+        console.log('Force setting message content...');
         const personalizedMessage = config.messageTemplate.replace(/{name}/g, name);
-        const contentSet = await setMessageContent(messageInput, personalizedMessage);
-        
-        if (!contentSet) {
-            console.log('Failed to set message content');
-            await closeAllMessageWindows();
-            return false;
-        }
+        await forceSetMessageContent(messageInput, personalizedMessage);
 
         // Only ask for confirmation if requireApproval is true
         if (config.requireApproval) {
@@ -480,40 +501,19 @@ const processApplicant = async (applicant) => {
             }
         }
 
-        // Send message
-        console.log('Sending message...');
-        
-        // Create a new mouse event
-        const clickEvent = new MouseEvent('click', {
-            bubbles: true,
-            cancelable: true,
-            view: window
-        });
-        
-        // Dispatch the click event
-        sendButton.dispatchEvent(clickEvent);
-        await sleep(2000);
+        // Force send message
+        console.log('Force sending message...');
+        await forceSendMessage(sendButton);
 
-        // Check if message was sent
+        // Force verify message was sent
         let messageSent = !document.querySelector('div.msg-form__contenteditable[contenteditable="true"][role="textbox"]');
         
         if (!messageSent) {
-            console.log('Message not sent, trying form submit...');
-            
-            // Try form submit
-            const form = document.querySelector('form.msg-form');
-            if (form) {
-                // Create and dispatch submit event
-                const submitEvent = new SubmitEvent('submit', {
-                    bubbles: true,
-                    cancelable: true
-                });
-                form.dispatchEvent(submitEvent);
-                await sleep(2000);
-                
-                // Check again
-                messageSent = !document.querySelector('div.msg-form__contenteditable[contenteditable="true"][role="textbox"]');
-            }
+            console.log('Message not sent, forcing retry...');
+            // Force retry
+            await forceSendMessage(sendButton);
+            await sleep(2000);
+            messageSent = !document.querySelector('div.msg-form__contenteditable[contenteditable="true"][role="textbox"]');
         }
 
         if (messageSent) {
