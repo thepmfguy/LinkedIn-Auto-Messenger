@@ -7,6 +7,9 @@
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-javascript.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -33,28 +36,64 @@
         }
     </script>
     <style>
-        .gradient-bg {
-            background: linear-gradient(135deg, #0c91e8 0%, #004170 100%);
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        .animate-slide-in {
+            animation: slideIn 0.4s ease-out forwards;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #0c91e8 0%, #004170 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .natural-gradient {
+            background: linear-gradient(135deg, #f0f7ff 0%, #e0effe 100%);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
         .message-box {
             min-height: 200px;
             resize: vertical;
+            transition: all 0.3s ease;
         }
-        .code-box {
-            max-height: 300px;
-            overflow-y: auto;
+
+        .message-box:focus {
+            box-shadow: 0 4px 20px rgba(12, 145, 232, 0.15);
         }
+
         .toggle-switch {
             position: relative;
             display: inline-block;
             width: 48px;
             height: 24px;
         }
+
         .toggle-switch input {
             opacity: 0;
             width: 0;
             height: 0;
         }
+
         .toggle-slider {
             position: absolute;
             cursor: pointer;
@@ -62,10 +101,11 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: #ccc;
+            background-color: #e0effe;
             transition: .4s;
             border-radius: 24px;
         }
+
         .toggle-slider:before {
             position: absolute;
             content: "";
@@ -76,140 +116,110 @@
             background-color: white;
             transition: .4s;
             border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+
         input:checked + .toggle-slider {
             background-color: #0c91e8;
         }
+
         input:checked + .toggle-slider:before {
             transform: translateX(24px);
         }
-        .card {
-            backdrop-filter: blur(10px);
-            background: rgba(255, 255, 255, 0.9);
+
+        .code-box {
+            max-height: 500px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #0c91e8 #f0f7ff;
         }
-        .instruction-step {
-            counter-increment: step-counter;
+
+        .code-box::-webkit-scrollbar {
+            width: 8px;
         }
-        .instruction-step::before {
-            content: counter(step-counter);
-            background-color: #0c91e8;
-            color: white;
-            font-weight: 600;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 12px;
+
+        .code-box::-webkit-scrollbar-track {
+            background: #f0f7ff;
+            border-radius: 4px;
+        }
+
+        .code-box::-webkit-scrollbar-thumb {
+            background: #0c91e8;
+            border-radius: 4px;
+        }
+
+        pre[class*="language-"] {
+            margin: 0;
+            border-radius: 8px;
+            background: #1a1a1a !important;
+        }
+
+        .hover-scale {
+            transition: transform 0.2s ease;
+        }
+
+        .hover-scale:hover {
+            transform: scale(1.02);
         }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen font-sans">
-    <div class="gradient-bg text-white py-16">
-        <div class="container mx-auto px-4">
-            <div class="max-w-3xl mx-auto text-center">
-                <h1 class="text-5xl font-bold mb-6">LinkedIn Applicant Messenger</h1>
-                <p class="text-xl opacity-90">Automate your applicant messaging with personalized templates</p>
+    <div class="natural-gradient min-h-screen py-12">
+        <div class="container mx-auto px-4 max-w-5xl">
+            <!-- Main Content Section -->
+            <div class="text-center mb-12 animate-fade-in">
+                <h1 class="text-6xl font-bold mb-6 gradient-text">LinkedIn Applicant Messenger</h1>
+                <p class="text-xl text-gray-600">Automate your applicant messaging with personalized templates</p>
             </div>
-        </div>
-    </div>
 
-    <div class="container mx-auto px-4 py-12 -mt-8">
-        <div class="max-w-3xl mx-auto">
-            <div class="card rounded-2xl shadow-xl p-8 mb-8">
-                <div class="bg-blue-50 rounded-xl p-6 mb-8">
-                    <h3 class="text-lg font-semibold text-primary-700 mb-4">How to Use</h3>
-                    <ol class="list-none space-y-4 text-gray-700">
-                        <li class="instruction-step flex items-start">
-                            <span>Customize your message template below</span>
-                        </li>
-                        <li class="instruction-step flex items-start">
-                            <span>Set any other options you want to change</span>
-                        </li>
-                        <li class="instruction-step flex items-start">
-                            <span>Click "Generate Script" to create your custom script</span>
-                        </li>
-                        <li class="instruction-step flex items-start">
-                            <span>Click "Copy Script" to copy it to your clipboard</span>
-                        </li>
-                        <li class="instruction-step flex items-start">
-                            <span>Go to LinkedIn job application page</span>
-                        </li>
-                        <li class="instruction-step flex items-start">
-                            <span>Open developer console (F12)</span>
-                        </li>
-                        <li class="instruction-step flex items-start">
-                            <span>Paste the script and press Enter</span>
-                        </li>
-                    </ol>
-                </div>
-
-                <div class="bg-blue-50 rounded-xl p-6 mb-8">
-                    <h3 class="text-lg font-semibold text-primary-700 mb-4">Detailed Instructions</h3>
-                    <div class="space-y-6">
-                        <div class="instruction-step flex items-start">
-                            <span>Visit your LinkedIn job post and navigate to the view where all candidates are shown</span>
-                        </div>
-                        <div class="instruction-step flex items-start">
-                            <span>Right-click anywhere on the page and select "Inspect" or press F12 to open Developer Tools</span>
-                        </div>
-                        <div class="instruction-step flex items-start">
-                            <span>Click on the "Console" tab in the Developer Tools panel</span>
-                        </div>
-                        <div class="instruction-step flex items-start">
-                            <span>If this is your first time, you may need to type "allow pasting" in the console to enable pasting functionality</span>
-                        </div>
-                        <div class="instruction-step flex items-start">
-                            <span>Paste the generated script into the console and press Enter to start the automation</span>
-                        </div>
-                        <div class="instruction-step flex items-start">
-                            <span>Set the applicant limit correctly to match the number of candidates on the current page</span>
-                        </div>
-                        <div class="instruction-step flex items-start">
-                            <span>Note: You'll need to run the script again when you navigate to the next page of applicants</span>
-                        </div>
-                    </div>
-                </div>
-
+            <!-- Message Template Section -->
+            <div class="glass-card rounded-2xl p-8 mb-8 animate-fade-in hover-scale">
                 <div class="space-y-8">
                     <div>
-                        <label for="messageTemplate" class="block text-sm font-medium text-gray-700 mb-2">
-                            Message Template (Use {firstName} for personalization):
+                        <label for="messageTemplate" class="block text-lg font-medium text-gray-700 mb-3">
+                            Message Template
                         </label>
+                        <p class="text-gray-500 mb-4">Use {firstName} to personalize your message for each applicant</p>
                         <textarea 
                             id="messageTemplate" 
-                            class="message-box w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 shadow-sm"
+                            class="message-box w-full px-6 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 shadow-sm bg-white"
                         >Hi {firstName},
 
-Thanks for applying for the position. Based on the sccreening questions, you are shortlisted. To take your application further, please fill out the form below and it also has an assignment that you are required to submit.
+Thanks for applying for the Tars Content Writer Internship.
 
-Once submitted, you will have a 1:1 interview round and we can proceed with your application.
+Please talk to this Application Qualifying Agent: https://chatbot.hellotars.com/conv/w28F1a
 
-https://forms.gle/y8Ub8h9pA1zrdkYJ7
+It will ask you all the basic qualifying questions. If you qualify, it will give you a detailed content writing assignment.
 
-Best Regards
-Gaurav B.</textarea>
+For ease of access, content Writing Assignment Details here: https://hellotars.notion.site/Content-Marketing-Tars-Assignment-1-c16e8cb2d3b644918d76c81fccaac1ac?pvs=4
+
+You need to submit the assignment to us within the next 3 days from now, to qualify for the next Phone Screen round.
+
+All the best :)
+Regards
+Gaurav</textarea>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label for="applicantLimit" class="block text-sm font-medium text-gray-700 mb-2">
-                                Applicant Limit (leave empty to process all):
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="glass-card rounded-xl p-6">
+                            <label for="applicantLimit" class="block text-lg font-medium text-gray-700 mb-3">
+                                Applicant Limit
                             </label>
+                            <p class="text-gray-500 mb-4">Leave empty to process all applicants</p>
                             <input 
                                 type="number" 
                                 id="applicantLimit" 
                                 min="1" 
                                 placeholder="Optional"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 shadow-sm"
+                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 shadow-sm bg-white"
                             >
                         </div>
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Require Approval Before Sending:
+                        <div class="glass-card rounded-xl p-6">
+                            <label class="block text-lg font-medium text-gray-700 mb-3">
+                                Message Approval
                             </label>
+                            <p class="text-gray-500 mb-4">Require confirmation before sending each message</p>
                             <div class="flex items-center space-x-3">
                                 <label class="toggle-switch">
                                     <input type="checkbox" id="requireApproval" checked>
@@ -223,7 +233,7 @@ Gaurav B.</textarea>
                     <div class="flex justify-end">
                         <button 
                             id="generateBtn" 
-                            class="px-8 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                            class="px-8 py-4 bg-primary-600 text-white rounded-xl hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all duration-200 transform hover:-translate-y-1 hover:shadow-lg"
                         >
                             Generate Script
                         </button>
@@ -231,32 +241,88 @@ Gaurav B.</textarea>
                 </div>
             </div>
 
-            <div id="scriptCard" class="card rounded-2xl shadow-xl p-8 hidden">
+            <!-- Generated Script Section -->
+            <div id="scriptCard" class="glass-card rounded-2xl p-8 hidden animate-fade-in hover-scale">
                 <h2 class="text-2xl font-bold text-gray-800 mb-4">Your Custom Script</h2>
                 <p class="text-gray-600 mb-6">Copy and paste this into your browser's console on the LinkedIn job applications page:</p>
                 
-                <div class="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
-                    <div class="flex justify-between items-center bg-gray-100 px-6 py-3 border-b border-gray-200">
-                        <span class="text-sm font-medium text-gray-700">JavaScript</span>
+                <div class="rounded-xl overflow-hidden border border-gray-200">
+                    <div class="flex justify-between items-center bg-gray-900 px-6 py-4 border-b border-gray-700">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        </div>
                         <div class="flex items-center">
-                            <span id="copySuccess" class="text-green-600 font-medium mr-3 hidden">Copied!</span>
+                            <span id="copySuccess" class="text-green-400 font-medium mr-3 hidden animate-fade-in">Copied!</span>
                             <button 
                                 id="copyBtn" 
-                                class="px-4 py-2 text-sm bg-white text-primary-600 border border-primary-600 rounded-lg hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors"
+                                class="px-4 py-2 text-sm bg-gray-800 text-white rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all duration-200"
                             >
                                 Copy Script
                             </button>
                         </div>
                     </div>
-                    <div id="scriptContent" class="code-box p-6 font-mono text-sm text-gray-800 bg-gray-900 text-gray-100"></div>
+                    <pre class="code-box"><code id="scriptContent" class="language-javascript"></code></pre>
+                </div>
+            </div>
+
+            <!-- Instructions Section -->
+            <div class="mt-16 space-y-8">
+                <div class="glass-card rounded-2xl p-8 animate-fade-in hover-scale">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-6">Quick Start Guide</h3>
+                    <ol class="list-none space-y-4 text-gray-700">
+                        <li class="flex items-center space-x-4 animate-slide-in" style="animation-delay: 0.1s">
+                            <span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center font-semibold">1</span>
+                            <span>Customize your message template above</span>
+                        </li>
+                        <li class="flex items-center space-x-4 animate-slide-in" style="animation-delay: 0.2s">
+                            <span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center font-semibold">2</span>
+                            <span>Set your preferred options</span>
+                        </li>
+                        <li class="flex items-center space-x-4 animate-slide-in" style="animation-delay: 0.3s">
+                            <span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center font-semibold">3</span>
+                            <span>Click "Generate Script" to create your automation script</span>
+                        </li>
+                        <li class="flex items-center space-x-4 animate-slide-in" style="animation-delay: 0.4s">
+                            <span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center font-semibold">4</span>
+                            <span>Copy the generated script</span>
+                        </li>
+                    </ol>
+                </div>
+
+                <div class="glass-card rounded-2xl p-8 animate-fade-in hover-scale">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-6">Detailed Instructions</h3>
+                    <div class="space-y-6 text-gray-700">
+                        <div class="animate-slide-in" style="animation-delay: 0.1s">
+                            <h4 class="font-semibold text-lg mb-2">1. Prepare LinkedIn</h4>
+                            <p>Visit your LinkedIn job post and navigate to the view where all candidates are shown</p>
+                        </div>
+                        <div class="animate-slide-in" style="animation-delay: 0.2s">
+                            <h4 class="font-semibold text-lg mb-2">2. Open Developer Console</h4>
+                            <p>Press F12 or right-click and select "Inspect" to open Developer Tools, then click on the "Console" tab</p>
+                        </div>
+                        <div class="animate-slide-in" style="animation-delay: 0.3s">
+                            <h4 class="font-semibold text-lg mb-2">3. Enable Pasting</h4>
+                            <p>If this is your first time, type "allow pasting" in the console when prompted</p>
+                        </div>
+                        <div class="animate-slide-in" style="animation-delay: 0.4s">
+                            <h4 class="font-semibold text-lg mb-2">4. Run the Script</h4>
+                            <p>Paste the generated script and press Enter to start the automation</p>
+                        </div>
+                        <div class="animate-slide-in" style="animation-delay: 0.5s">
+                            <h4 class="font-semibold text-lg mb-2">5. Multiple Pages</h4>
+                            <p>Remember to run the script again when you navigate to the next page of applicants</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <footer class="bg-gray-100 py-8">
-        <div class="container mx-auto px-4 text-center text-gray-600">
-            <p>Access this tool at: <a href="https://your-domain.com" class="text-primary-600 hover:text-primary-700 font-medium">https://your-domain.com</a></p>
+    <footer class="bg-gray-900 text-white py-8 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p>Access this tool at: <a href="https://your-domain.com" class="text-primary-300 hover:text-primary-200 font-medium transition-colors">https://your-domain.com</a></p>
         </div>
     </footer>
 
@@ -279,12 +345,17 @@ Gaurav B.</textarea>
             // Create the script with the customized values
             const script = generateFullScript(messageTemplate, applicantLimit, requireApproval);
             
-            // Display the script
-            document.getElementById('scriptContent').textContent = script;
-            document.getElementById('scriptCard').classList.remove('hidden');
+            // Display the script with syntax highlighting
+            const scriptContent = document.getElementById('scriptContent');
+            scriptContent.textContent = script;
+            Prism.highlightElement(scriptContent);
+            
+            // Show the script card
+            const scriptCard = document.getElementById('scriptCard');
+            scriptCard.classList.remove('hidden');
             
             // Scroll to the script card
-            document.getElementById('scriptCard').scrollIntoView({ behavior: 'smooth' });
+            scriptCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
         function copyScript() {
