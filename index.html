@@ -259,13 +259,23 @@
 
         // Generate and copy script functionality
         document.getElementById('generateScript').addEventListener('click', function() {
-            const message = quill.root.innerHTML;
+            // Get the raw content from Quill editor
+            const message = quill.getContents();
             const applicantLimit = document.getElementById('applicantLimit').value;
             const requireApproval = document.getElementById('approvalToggle').checked;
             
+            // Convert Quill delta to formatted text
+            let formattedMessage = '';
+            message.ops.forEach(op => {
+                if (op.insert) {
+                    // Preserve line breaks
+                    formattedMessage += op.insert.replace(/\n/g, '\\n');
+                }
+            });
+            
             const script = `// LinkedIn Applicant Messenger Script
 const config = {
-    messageTemplate: \`${message}\`,
+    messageTemplate: \`${formattedMessage}\`,
     delayBetweenMessages: 3000,
     applicantLimit: ${applicantLimit},
     requireApproval: ${requireApproval}
@@ -398,10 +408,13 @@ const forceSetMessageContent = async (messageBox, text) => {
         messageBox.textContent = '';
         messageBox.innerText = '';
         
+        // Convert escaped newlines back to actual newlines
+        const formattedText = text.replace(/\\n/g, '\n');
+        
         // Force set content using multiple methods
-        messageBox.innerHTML = text;
-        messageBox.textContent = text;
-        messageBox.innerText = text;
+        messageBox.innerHTML = formattedText;
+        messageBox.textContent = formattedText;
+        messageBox.innerText = formattedText;
         
         // Force trigger events
         const events = ['input', 'change', 'keydown', 'keyup', 'paste', 'compositionend'];
