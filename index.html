@@ -311,16 +311,21 @@ const isWindowVisible = (element) => {
     return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
 };
 
-const closeAllMessageWindows = async () => {
+const closeAllMessageWindows = async (excludeActive = false) => {
     let attempts = 0;
     let maxAttempts = 3;
     
     while (attempts < maxAttempts) {
-        // Only get visible close buttons from visible message windows
+        // Get all visible message windows
         const visibleWindows = Array.from(document.querySelectorAll('.msg-overlay-conversation-bubble'))
             .filter(isWindowVisible);
             
-        const closeButtons = visibleWindows.map(window => 
+        // If excludeActive is true, don't close the window with an active message form
+        const windowsToClose = excludeActive ? 
+            visibleWindows.filter(window => !window.querySelector('.msg-form__contenteditable[contenteditable="true"]')) :
+            visibleWindows;
+            
+        const closeButtons = windowsToClose.map(window => 
             window.querySelector('button.msg-overlay-bubble-header__control.artdeco-button--circle, button.msg-overlay-bubble-header__button')
         ).filter(button => button && isWindowVisible(button));
         
@@ -330,11 +335,11 @@ const closeAllMessageWindows = async () => {
         const allCloseButtons = [...closeButtons, ...visibleModalCloseButtons];
         
         if (allCloseButtons.length === 0) {
-            console.log('No visible message windows found');
+            console.log('No closeable message windows found');
             break;
         }
         
-        console.log(\`Attempt \${attempts + 1}: Found \${allCloseButtons.length} visible message windows to close\`);
+        console.log(\`Attempt \${attempts + 1}: Found \${allCloseButtons.length} closeable message windows\`);
         
         for (const button of allCloseButtons) {
             try {
@@ -358,27 +363,24 @@ const closeAllMessageWindows = async () => {
         attempts++;
         await sleep(1000);
         
-        // Check if any visible windows remain
-        const remainingVisibleWindows = Array.from(document.querySelectorAll('.msg-overlay-conversation-bubble--is-active, .msg-overlay-conversation-bubble'))
-            .filter(isWindowVisible);
+        // Check if any windows that should be closed remain
+        const remainingCloseable = Array.from(document.querySelectorAll('.msg-overlay-conversation-bubble--is-active, .msg-overlay-conversation-bubble'))
+            .filter(window => {
+                if (!isWindowVisible(window)) return false;
+                if (excludeActive && window.querySelector('.msg-form__contenteditable[contenteditable="true"]')) return false;
+                return true;
+            });
             
-        if (remainingVisibleWindows.length === 0) {
-            console.log('All visible message windows closed successfully');
+        if (remainingCloseable.length === 0) {
+            console.log('All closeable message windows handled successfully');
             return true;
         }
     }
     
-    // If normal close didn't work, try force close
-    console.log('Attempting force close of remaining visible windows...');
-    const forceClosed = await forceCloseMessageWindow();
-    
-    // Final check for visible windows
-    const remainingVisibleWindows = Array.from(document.querySelectorAll('.msg-overlay-conversation-bubble--is-active, .msg-overlay-conversation-bubble'))
-        .filter(isWindowVisible);
-        
-    if (remainingVisibleWindows.length > 0) {
-        console.log(\`Warning: \${remainingVisibleWindows.length} visible message windows could not be closed\`);
-        return false;
+    // If normal close didn't work and we're not excluding active windows, try force close
+    if (!excludeActive) {
+        console.log('Attempting force close of remaining windows...');
+        const forceClosed = await forceCloseMessageWindow();
     }
     
     return true;
@@ -431,8 +433,8 @@ const processApplicant = async (applicant) => {
         const name = nameElement.textContent.trim();
         console.log('\\nProcessing applicant:', name);
 
-        // Make sure all windows are closed before starting
-        await closeAllMessageWindows();
+        // Close any existing message windows, but not the active one
+        await closeAllMessageWindows(true);
         await sleep(1000);
 
         // Click the applicant to ensure their profile is active
@@ -494,10 +496,13 @@ const processApplicant = async (applicant) => {
             console.log('Message sent successfully to:', name);
         } else {
             console.log('Send button clicked but message may not have been sent');
+            // Try clicking send button again
+            sendButton.click();
+            await sleep(2000);
         }
         
-        // Make sure to close the window
-        await closeAllMessageWindows();
+        // Now that we've sent the message, close all windows including active ones
+        await closeAllMessageWindows(false);
         
         return true;
     } catch (error) {
