@@ -285,16 +285,15 @@ const waitForElement = async (selector, timeout = 10000) => {
 
 const forceCloseMessageWindow = async () => {
     try {
-        // Force close any open message windows using LinkedIn's internal API
-        const conversations = document.querySelectorAll('.msg-overlay-conversation-bubble--is-active');
+        // Only target visible active conversations
+        const conversations = document.querySelectorAll('.msg-overlay-conversation-bubble--is-active:not([style*="display: none"])');
         conversations.forEach(conv => {
-            // Trigger the close event directly
             conv.style.display = 'none';
             conv.classList.remove('msg-overlay-conversation-bubble--is-active');
         });
         
-        // Remove any modal overlays
-        const overlays = document.querySelectorAll('.artdeco-modal-overlay');
+        // Only remove visible overlays
+        const overlays = document.querySelectorAll('.artdeco-modal-overlay:not([style*="display: none"])');
         overlays.forEach(overlay => {
             overlay.remove();
         });
@@ -306,32 +305,48 @@ const forceCloseMessageWindow = async () => {
     }
 };
 
+const isWindowVisible = (element) => {
+    if (!element) return false;
+    const style = window.getComputedStyle(element);
+    return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
+};
+
 const closeAllMessageWindows = async () => {
     let attempts = 0;
     let maxAttempts = 3;
     
     while (attempts < maxAttempts) {
-        // First try normal close buttons
-        const closeButtons = [
-            ...document.querySelectorAll('button.msg-overlay-bubble-header__control.artdeco-button--circle'),
-            ...document.querySelectorAll('button.msg-overlay-bubble-header__button'),
-            ...document.querySelectorAll('button[data-control-name="overlay.close_conversation_window"]'),
-            ...document.querySelectorAll('button.artdeco-modal__dismiss')
-        ];
+        // Only get visible close buttons from visible message windows
+        const visibleWindows = Array.from(document.querySelectorAll('.msg-overlay-conversation-bubble'))
+            .filter(isWindowVisible);
+            
+        const closeButtons = visibleWindows.map(window => 
+            window.querySelector('button.msg-overlay-bubble-header__control.artdeco-button--circle, button.msg-overlay-bubble-header__button')
+        ).filter(button => button && isWindowVisible(button));
         
-        if (closeButtons.length === 0) break;
+        const visibleModalCloseButtons = Array.from(document.querySelectorAll('button.artdeco-modal__dismiss'))
+            .filter(isWindowVisible);
+            
+        const allCloseButtons = [...closeButtons, ...visibleModalCloseButtons];
         
-        console.log(\`Attempt \${attempts + 1}: Found \${closeButtons.length} message windows to close\`);
+        if (allCloseButtons.length === 0) {
+            console.log('No visible message windows found');
+            break;
+        }
         
-        for (const button of closeButtons) {
+        console.log(\`Attempt \${attempts + 1}: Found \${allCloseButtons.length} visible message windows to close\`);
+        
+        for (const button of allCloseButtons) {
             try {
                 button.click();
                 await sleep(1000);
                 
-                // Handle any discard draft dialogs
-                const discardButton = document.querySelector('button[data-control-name="discard_conversation"]');
+                // Only handle visible discard dialogs
+                const discardButton = Array.from(document.querySelectorAll('button[data-control-name="discard_conversation"]'))
+                    .find(isWindowVisible);
+                    
                 if (discardButton) {
-                    console.log('Found discard dialog, clicking discard...');
+                    console.log('Found visible discard dialog, clicking discard...');
                     discardButton.click();
                     await sleep(1000);
                 }
@@ -343,22 +358,26 @@ const closeAllMessageWindows = async () => {
         attempts++;
         await sleep(1000);
         
-        // Check if any windows remain
-        const remainingWindows = document.querySelectorAll('.msg-overlay-conversation-bubble--is-active, .msg-overlay-conversation-bubble');
-        if (remainingWindows.length === 0) {
-            console.log('All message windows closed successfully');
+        // Check if any visible windows remain
+        const remainingVisibleWindows = Array.from(document.querySelectorAll('.msg-overlay-conversation-bubble--is-active, .msg-overlay-conversation-bubble'))
+            .filter(isWindowVisible);
+            
+        if (remainingVisibleWindows.length === 0) {
+            console.log('All visible message windows closed successfully');
             return true;
         }
     }
     
     // If normal close didn't work, try force close
-    console.log('Attempting force close of remaining windows...');
+    console.log('Attempting force close of remaining visible windows...');
     const forceClosed = await forceCloseMessageWindow();
     
-    // Final check
-    const remainingWindows = document.querySelectorAll('.msg-overlay-conversation-bubble--is-active, .msg-overlay-conversation-bubble');
-    if (remainingWindows.length > 0) {
-        console.log(\`Warning: \${remainingWindows.length} message windows could not be closed\`);
+    // Final check for visible windows
+    const remainingVisibleWindows = Array.from(document.querySelectorAll('.msg-overlay-conversation-bubble--is-active, .msg-overlay-conversation-bubble'))
+        .filter(isWindowVisible);
+        
+    if (remainingVisibleWindows.length > 0) {
+        console.log(\`Warning: \${remainingVisibleWindows.length} visible message windows could not be closed\`);
         return false;
     }
     
