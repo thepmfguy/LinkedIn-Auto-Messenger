@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LinkedIn Applicant Messenger</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -87,6 +87,22 @@
             backdrop-filter: blur(10px);
             background: rgba(255, 255, 255, 0.9);
         }
+        .instruction-step {
+            counter-increment: step-counter;
+        }
+        .instruction-step::before {
+            content: counter(step-counter);
+            background-color: #0c91e8;
+            color: white;
+            font-weight: 600;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen font-sans">
@@ -103,16 +119,57 @@
         <div class="max-w-3xl mx-auto">
             <div class="card rounded-2xl shadow-xl p-8 mb-8">
                 <div class="bg-blue-50 rounded-xl p-6 mb-8">
-                    <h3 class="text-lg font-semibold text-primary-700 mb-3">How to Use</h3>
-                    <ol class="list-decimal list-inside space-y-2 text-gray-700">
-                        <li>Customize your message template below</li>
-                        <li>Set any other options you want to change</li>
-                        <li>Click "Generate Script" to create your custom script</li>
-                        <li>Click "Copy Script" to copy it to your clipboard</li>
-                        <li>Go to LinkedIn job application page</li>
-                        <li>Open developer console (F12)</li>
-                        <li>Paste the script and press Enter</li>
+                    <h3 class="text-lg font-semibold text-primary-700 mb-4">How to Use</h3>
+                    <ol class="list-none space-y-4 text-gray-700">
+                        <li class="instruction-step flex items-start">
+                            <span>Customize your message template below</span>
+                        </li>
+                        <li class="instruction-step flex items-start">
+                            <span>Set any other options you want to change</span>
+                        </li>
+                        <li class="instruction-step flex items-start">
+                            <span>Click "Generate Script" to create your custom script</span>
+                        </li>
+                        <li class="instruction-step flex items-start">
+                            <span>Click "Copy Script" to copy it to your clipboard</span>
+                        </li>
+                        <li class="instruction-step flex items-start">
+                            <span>Go to LinkedIn job application page</span>
+                        </li>
+                        <li class="instruction-step flex items-start">
+                            <span>Open developer console (F12)</span>
+                        </li>
+                        <li class="instruction-step flex items-start">
+                            <span>Paste the script and press Enter</span>
+                        </li>
                     </ol>
+                </div>
+
+                <div class="bg-blue-50 rounded-xl p-6 mb-8">
+                    <h3 class="text-lg font-semibold text-primary-700 mb-4">Detailed Instructions</h3>
+                    <div class="space-y-6">
+                        <div class="instruction-step flex items-start">
+                            <span>Visit your LinkedIn job post and navigate to the view where all candidates are shown</span>
+                        </div>
+                        <div class="instruction-step flex items-start">
+                            <span>Right-click anywhere on the page and select "Inspect" or press F12 to open Developer Tools</span>
+                        </div>
+                        <div class="instruction-step flex items-start">
+                            <span>Click on the "Console" tab in the Developer Tools panel</span>
+                        </div>
+                        <div class="instruction-step flex items-start">
+                            <span>If this is your first time, you may need to type "allow pasting" in the console to enable pasting functionality</span>
+                        </div>
+                        <div class="instruction-step flex items-start">
+                            <span>Paste the generated script into the console and press Enter to start the automation</span>
+                        </div>
+                        <div class="instruction-step flex items-start">
+                            <span>Set the applicant limit correctly to match the number of candidates on the current page</span>
+                        </div>
+                        <div class="instruction-step flex items-start">
+                            <span>Note: You'll need to run the script again when you navigate to the next page of applicants</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="space-y-8">
@@ -191,7 +248,7 @@ Gaurav B.</textarea>
                             </button>
                         </div>
                     </div>
-                    <div id="scriptContent" class="code-box p-6 font-mono text-sm text-gray-800"></div>
+                    <div id="scriptContent" class="code-box p-6 font-mono text-sm text-gray-800 bg-gray-900 text-gray-100"></div>
                 </div>
             </div>
         </div>
