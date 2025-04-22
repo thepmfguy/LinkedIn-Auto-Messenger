@@ -8,8 +8,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tailwindcss/typography@0.5.x/dist/typography.min.css"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.0-rc.2/dist/quill.snow.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
     <script src="https://unpkg.com/@lottiefiles/lottie-interactivity@latest/dist/lottie-interactivity.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <script>
         tailwind.config = {
@@ -86,6 +88,13 @@
         .card-hover:hover {
             transform: translateY(-5px);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #0ea5e9;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #0ea5e9;
         }
     </style>
 </head>
@@ -231,31 +240,56 @@
             </div>
         </div>
 
-        <!-- Instructions Card -->
+        <!-- Detailed Instructions -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 card-hover">
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Step-by-Step Guide</h2>
-            <ol class="list-decimal list-inside space-y-4 text-gray-600 dark:text-gray-400">
-                <li class="flex items-start">
-                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-400 flex items-center justify-center mr-3">1</span>
-                    <span>Customize your message template using the rich text editor above</span>
-                </li>
-                <li class="flex items-start">
-                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-400 flex items-center justify-center mr-3">2</span>
-                    <span>Set the number of applicants you want to process</span>
-                </li>
-                <li class="flex items-start">
-                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-400 flex items-center justify-center mr-3">3</span>
-                    <span>Toggle message approval if needed</span>
-                </li>
-                <li class="flex items-start">
-                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-400 flex items-center justify-center mr-3">4</span>
-                    <span>Click "Generate Script" and copy the code</span>
-                </li>
-                <li class="flex items-start">
-                    <span class="flex-shrink-0 w-6 h-6 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-400 flex items-center justify-center mr-3">5</span>
-                    <span>Paste the code in LinkedIn's developer console (F12)</span>
-                </li>
-            </ol>
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">Detailed Instructions</h2>
+            <div class="space-y-6">
+                <div class="flex items-start space-x-4">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-400 flex items-center justify-center">
+                        1
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Visit Your Job Post</h3>
+                        <p class="text-gray-600 dark:text-gray-400">Go to your LinkedIn job post and navigate to the view where all candidates are shown.</p>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-4">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-400 flex items-center justify-center">
+                        2
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Open Developer Console</h3>
+                        <p class="text-gray-600 dark:text-gray-400">Right-click anywhere on the page and select "Inspect" or press F12. Then click on the "Console" tab.</p>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-4">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-400 flex items-center justify-center">
+                        3
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Enable Pasting</h3>
+                        <p class="text-gray-600 dark:text-gray-400">If this is your first time, type "allow pasting" in the console when prompted.</p>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-4">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-400 flex items-center justify-center">
+                        4
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Run the Script</h3>
+                        <p class="text-gray-600 dark:text-gray-400">Paste the generated script and press Enter to start the automation. The tool will automatically start sending messages to candidates.</p>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-4">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-400 flex items-center justify-center">
+                        5
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Multiple Pages</h3>
+                        <p class="text-gray-600 dark:text-gray-400">Remember to run the script again when you navigate to the next page of applicants. Make sure to set the limit correctly to match the number of applicants on each page.</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -307,7 +341,17 @@
         const approvalStatus = document.getElementById('approvalStatus');
         
         approvalToggle.addEventListener('change', function() {
-            approvalStatus.textContent = this.checked ? 'Enabled' : 'Disabled';
+            const isChecked = this.checked;
+            approvalStatus.textContent = isChecked ? 'Enabled' : 'Disabled';
+            
+            // Update toggle visual state
+            if (isChecked) {
+                this.classList.add('translate-x-0');
+                this.classList.remove('translate-x-6');
+            } else {
+                this.classList.remove('translate-x-0');
+                this.classList.add('translate-x-6');
+            }
         });
 
         // Generate and copy script functionality
@@ -374,18 +418,8 @@ processApplicants();`;
             scriptCard.classList.remove('hidden');
             scriptCard.scrollIntoView({ behavior: 'smooth' });
             
-            // Initialize Lottie animations for the script section
-            LottieInteractivity.create({
-                mode: "scroll",
-                player: "#scriptAnimation",
-                actions: [
-                    {
-                        visibility: [0, 1],
-                        type: "seek",
-                        frames: [0, 100]
-                    }
-                ]
-            });
+            // Apply syntax highlighting
+            hljs.highlightElement(scriptContent);
         });
 
         document.getElementById('copyCodeBtn').addEventListener('click', function() {
