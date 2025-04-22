@@ -6,114 +6,101 @@
     <title>LinkedIn Applicant Messenger</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tailwindcss/typography@0.5.x/dist/typography.min.css"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.0-rc.2/dist/quill.snow.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
-    <link rel="stylesheet" href="globals.css">
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
-                    borderRadius: {
-                        DEFAULT: '0.7rem'
-                    }
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
                 }
             }
         }
     </script>
     <style>
         .ql-editor {
-            min-height: 200px;
-            font-size: var(--font-size-base);
-            line-height: var(--line-height-normal);
-            color: var(--color-text-primary);
+            @apply min-h-[200px] text-gray-900 dark:text-gray-100;
         }
         .ql-toolbar {
-            border-top-left-radius: var(--radius-lg);
-            border-top-right-radius: var(--radius-lg);
-            background-color: var(--color-background-secondary);
-            border-color: var(--color-border);
+            @apply bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-t-lg;
         }
         .ql-container {
-            border-bottom-left-radius: var(--radius-lg);
-            border-bottom-right-radius: var(--radius-lg);
-            background-color: var(--color-background);
-            border-color: var(--color-border);
+            @apply bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 rounded-b-lg;
         }
         .dark .ql-snow {
-            border-color: var(--color-border) !important;
-        }
-        .dark .ql-toolbar {
-            background-color: var(--color-background-secondary);
-            border-color: var(--color-border);
-        }
-        .dark .ql-container {
-            background-color: var(--color-background);
-            border-color: var(--color-border);
+            @apply border-gray-700;
         }
     </style>
 </head>
-<body class="min-h-screen">
+<body class="min-h-screen bg-gray-50 dark:bg-gray-900">
     <!-- Hero Section -->
-    <div class="container py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div class="text-center">
-            <h1 class="h1 mb-4">LinkedIn Applicant Messenger</h1>
-            <p class="text-xl mb-8">Automate your applicant messaging with personalized templates</p>
+            <h1 class="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+                LinkedIn Applicant Messenger
+            </h1>
+            <p class="text-xl text-gray-600 dark:text-gray-300">
+                Automate your applicant messaging with personalized templates
+            </p>
         </div>
     </div>
 
     <!-- Main Content -->
-    <div class="container py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Message Template Section -->
-        <div class="card mb-8">
-            <h2 class="h2 mb-4">Message Template</h2>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Message Template</h2>
             <div class="mb-4">
-                <div id="editor" class="border rounded-lg" style="border-color: var(--color-border)"></div>
+                <div id="editor"></div>
             </div>
-            <p class="text-sm">Use {name} to personalize messages with applicant names</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Use {name} to personalize messages with applicant names</p>
         </div>
 
         <!-- Options Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <!-- Applicant Limit -->
-            <div class="card">
-                <label for="applicantLimit" class="block text-sm font-medium mb-2">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <label for="applicantLimit" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Number of Applicants to Process
                 </label>
-                <input type="number" id="applicantLimit" min="1" value="10" class="input w-full">
+                <input type="number" id="applicantLimit" min="1" value="10"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             </div>
 
             <!-- Approval Toggle -->
-            <div class="card">
-                <label class="block text-sm font-medium mb-2">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Require Approval Before Sending
                 </label>
                 <div class="flex items-center">
                     <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" id="approvalToggle" checked class="toggle-checkbox">
-                        <span class="toggle-label"></span>
+                        <input type="checkbox" id="approvalToggle" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                     </label>
-                    <span id="approvalStatus" class="text-sm ml-2">Enabled</span>
+                    <span id="approvalStatus" class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">Enabled</span>
                 </div>
             </div>
         </div>
 
         <!-- Action Buttons -->
         <div class="flex flex-col sm:flex-row gap-4 mb-8">
-            <button id="generateScript" class="btn-primary flex-1">
+            <button id="generateScript"
+                class="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
                 Generate Script
             </button>
-            <button id="copyScript" class="btn-secondary flex-1">
+            <button id="copyScript"
+                class="flex-1 px-6 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg transition-colors duration-200">
                 Copy Script
             </button>
         </div>
 
         <!-- Generated Script Section -->
-        <div id="scriptCard" class="card mb-8 hidden">
-            <h2 class="h2 mb-4">Your Custom Script</h2>
+        <div id="scriptCard" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8 hidden">
+            <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Your Custom Script</h2>
             <div class="relative">
                 <div class="flex justify-between items-center bg-gray-900 px-4 py-3 rounded-t-lg">
                     <div class="flex items-center space-x-2">
@@ -133,86 +120,86 @@
         </div>
 
         <!-- How It Works Section -->
-        <div class="card mb-8">
-            <h2 class="h2 mb-6">How It Works</h2>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">How It Works</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="text-center">
-                    <div class="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center" style="background-color: var(--color-background-tertiary)">
-                        <svg class="w-6 h-6" style="color: var(--color-text-tertiary)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                         </svg>
                     </div>
-                    <h3 class="h3 mb-2">Customize Template</h3>
-                    <p>Create your message template with rich text formatting</p>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Customize Template</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Create your message template with rich text formatting</p>
                 </div>
                 <div class="text-center">
-                    <div class="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center" style="background-color: var(--color-background-tertiary)">
-                        <svg class="w-6 h-6" style="color: var(--color-text-tertiary)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
                         </svg>
                     </div>
-                    <h3 class="h3 mb-2">Generate Script</h3>
-                    <p>Get your personalized automation script</p>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Generate Script</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Get your personalized automation script</p>
                 </div>
                 <div class="text-center">
-                    <div class="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center" style="background-color: var(--color-background-tertiary)">
-                        <svg class="w-6 h-6" style="color: var(--color-text-tertiary)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                         </svg>
                     </div>
-                    <h3 class="h3 mb-2">Run Automation</h3>
-                    <p>Paste the script in LinkedIn's console</p>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Run Automation</h3>
+                    <p class="text-gray-600 dark:text-gray-400">Paste the script in LinkedIn's console</p>
                 </div>
             </div>
         </div>
 
         <!-- Detailed Instructions -->
-        <div class="card">
-            <h2 class="h2 mb-6">Detailed Instructions</h2>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-6">Detailed Instructions</h2>
             <div class="space-y-6">
                 <div class="flex items-start space-x-4">
-                    <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center" style="background-color: var(--color-background-tertiary); color: var(--color-text-tertiary)">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-400">
                         1
                     </div>
                     <div>
-                        <h3 class="h3 mb-2">Visit Your Job Post</h3>
-                        <p>Go to your LinkedIn job post and navigate to the view where all candidates are shown.</p>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Visit Your Job Post</h3>
+                        <p class="text-gray-600 dark:text-gray-400">Go to your LinkedIn job post and navigate to the view where all candidates are shown.</p>
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center" style="background-color: var(--color-background-tertiary); color: var(--color-text-tertiary)">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-400">
                         2
                     </div>
                     <div>
-                        <h3 class="h3 mb-2">Open Developer Console</h3>
-                        <p>Right-click anywhere on the page and select "Inspect" or press F12. Then click on the "Console" tab.</p>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Open Developer Console</h3>
+                        <p class="text-gray-600 dark:text-gray-400">Right-click anywhere on the page and select "Inspect" or press F12. Then click on the "Console" tab.</p>
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center" style="background-color: var(--color-background-tertiary); color: var(--color-text-tertiary)">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-400">
                         3
                     </div>
                     <div>
-                        <h3 class="h3 mb-2">Enable Pasting</h3>
-                        <p>If this is your first time, type "allow pasting" in the console when prompted.</p>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Enable Pasting</h3>
+                        <p class="text-gray-600 dark:text-gray-400">If this is your first time, type "allow pasting" in the console when prompted.</p>
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center" style="background-color: var(--color-background-tertiary); color: var(--color-text-tertiary)">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-400">
                         4
                     </div>
                     <div>
-                        <h3 class="h3 mb-2">Run the Script</h3>
-                        <p>Paste the generated script and press Enter to start the automation. The tool will automatically start sending messages to candidates.</p>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Run the Script</h3>
+                        <p class="text-gray-600 dark:text-gray-400">Paste the generated script and press Enter to start the automation. The tool will automatically start sending messages to candidates.</p>
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center" style="background-color: var(--color-background-tertiary); color: var(--color-text-tertiary)">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-400">
                         5
                     </div>
                     <div>
-                        <h3 class="h3 mb-2">Multiple Pages</h3>
-                        <p>Remember to run the script again when you navigate to the next page of applicants. Make sure to set the limit correctly to match the number of applicants on each page.</p>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Multiple Pages</h3>
+                        <p class="text-gray-600 dark:text-gray-400">Remember to run the script again when you navigate to the next page of applicants. Make sure to set the limit correctly to match the number of applicants on each page.</p>
                     </div>
                 </div>
             </div>
@@ -220,8 +207,8 @@
     </div>
 
     <!-- Theme Toggle -->
-    <button id="themeToggle" class="fixed bottom-4 right-4 p-3 rounded-full shadow-sm transition-transform duration-200 hover:scale-105" style="background-color: var(--color-background-secondary)">
-        <svg class="w-6 h-6" style="color: var(--color-text-primary)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <button id="themeToggle" class="fixed bottom-4 right-4 p-3 rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm transition-transform duration-200 hover:scale-105">
+        <svg class="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path id="themeIcon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
         </svg>
     </button>
@@ -267,17 +254,7 @@
         const approvalStatus = document.getElementById('approvalStatus');
         
         approvalToggle.addEventListener('change', function() {
-            const isChecked = this.checked;
-            approvalStatus.textContent = isChecked ? 'Enabled' : 'Disabled';
-            
-            // Update toggle visual state
-            if (isChecked) {
-                this.classList.add('translate-x-0');
-                this.classList.remove('translate-x-6');
-            } else {
-                this.classList.remove('translate-x-0');
-                this.classList.add('translate-x-6');
-            }
+            approvalStatus.textContent = this.checked ? 'Enabled' : 'Disabled';
         });
 
         // Generate and copy script functionality
@@ -355,10 +332,10 @@ processApplicants();`;
                     // Show success animation
                     const copyBtn = document.getElementById('copyCodeBtn');
                     copyBtn.innerHTML = `
-                        <svg class="w-4 h-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                         </svg>
-                        <span class="text-success">Copied!</span>
+                        <span class="text-green-500">Copied!</span>
                     `;
                     setTimeout(() => {
                         copyBtn.innerHTML = `
