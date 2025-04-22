@@ -1,597 +1,265 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LinkedIn Applicant Messenger</title>
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css" rel="stylesheet" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-javascript.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tailwindcss/typography@0.5.x/dist/typography.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.0-rc.2/dist/quill.snow.css">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
                         primary: {
-                            50: '#f0f7ff',
-                            100: '#e0effe',
-                            200: '#bae0fd',
-                            300: '#7cc8fb',
-                            400: '#36acf6',
-                            500: '#0c91e8',
-                            600: '#0073c6',
-                            700: '#005ca4',
-                            800: '#004d87',
-                            900: '#004170',
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
                         }
                     },
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
-                    },
                     borderRadius: {
-                        DEFAULT: '0.7rem',
-                    },
+                        DEFAULT: '0.7rem'
+                    }
                 }
             }
         }
     </script>
     <style>
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes slideIn {
-            from { transform: translateX(-20px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        .animate-fade-in {
-            animation: fadeIn 0.6s ease-out forwards;
-        }
-
-        .animate-slide-in {
-            animation: slideIn 0.4s ease-out forwards;
-        }
-
-        .gradient-text {
-            background: linear-gradient(135deg, #0c91e8 0%, #004170 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .natural-gradient {
-            background: linear-gradient(135deg, #f0f7ff 0%, #e0effe 100%);
-        }
-
-        .glass-card {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        }
-
-        .message-box {
+        .ql-editor {
             min-height: 200px;
-            resize: vertical;
-            transition: all 0.3s ease;
+            font-size: 1rem;
+            line-height: 1.5;
         }
-
-        .message-box:focus {
-            box-shadow: 0 4px 20px rgba(12, 145, 232, 0.15);
+        .ql-toolbar {
+            border-top-left-radius: 0.7rem;
+            border-top-right-radius: 0.7rem;
         }
-
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 48px;
-            height: 24px;
+        .ql-container {
+            border-bottom-left-radius: 0.7rem;
+            border-bottom-right-radius: 0.7rem;
         }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
+        .dark .ql-snow {
+            border-color: #374151 !important;
         }
-
-        .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #e0effe;
-            transition: .4s;
-            border-radius: 24px;
+        .dark .ql-toolbar {
+            background-color: #1f2937;
+            border-color: #374151;
         }
-
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 20px;
-            width: 20px;
-            left: 2px;
-            bottom: 2px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        .dark .ql-container {
+            background-color: #1f2937;
+            border-color: #374151;
         }
-
-        input:checked + .toggle-slider {
-            background-color: #0c91e8;
-        }
-
-        input:checked + .toggle-slider:before {
-            transform: translateX(24px);
-        }
-
-        .code-box {
-            max-height: 500px;
-            overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: #0c91e8 #f0f7ff;
-        }
-
-        .code-box::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .code-box::-webkit-scrollbar-track {
-            background: #f0f7ff;
-            border-radius: 4px;
-        }
-
-        .code-box::-webkit-scrollbar-thumb {
-            background: #0c91e8;
-            border-radius: 4px;
-        }
-
-        pre[class*="language-"] {
-            margin: 0;
-            border-radius: 8px;
-            background: #1a1a1a !important;
-        }
-
-        .hover-scale {
-            transition: transform 0.2s ease;
-        }
-
-        .hover-scale:hover {
-            transform: scale(1.02);
+        .dark .ql-editor {
+            color: #f3f4f6;
         }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen font-sans">
-    <div class="min-h-screen py-12">
-        <div class="container mx-auto px-4 max-w-5xl">
-            <!-- Main Content Section -->
-            <div class="text-center mb-12">
-                <h1 class="text-4xl font-bold text-gray-900 mb-4">LinkedIn Applicant Messenger</h1>
-                <p class="text-lg text-gray-600">Automate your applicant messaging with personalized templates</p>
-            </div>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200">
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">LinkedIn Applicant Messenger</h1>
+            <p class="text-gray-600 dark:text-gray-400">Automate your applicant messaging with personalized templates</p>
+        </div>
 
+        <!-- Main Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-8">
             <!-- Message Template Section -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-8 mb-8">
-                <div class="space-y-8">
-                    <div>
-                        <label for="messageTemplate" class="block text-base font-medium text-gray-700 mb-2">
-                            Message Template
-                        </label>
-                        <p class="text-sm text-gray-500 mb-4">Use {firstName} to personalize your message for each applicant</p>
-                        <textarea 
-                            id="messageTemplate" 
-                            class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 shadow-sm bg-white"
-                            placeholder="Enter your message template here..."
-                        >Hey {firstName},</textarea>
-                    </div>
+            <div class="mb-8">
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Message Template</h2>
+                <div class="mb-4">
+                    <div id="editor" class="border border-gray-200 dark:border-gray-700 rounded-lg"></div>
+                </div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Use {name} to personalize messages with applicant names</p>
+            </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="bg-white rounded-lg border border-gray-100 p-6">
-                            <label for="applicantLimit" class="block text-base font-medium text-gray-700 mb-2">
-                                Applicant Limit
-                            </label>
-                            <p class="text-sm text-gray-500 mb-4">Leave empty to process all applicants</p>
-                            <input 
-                                type="number" 
-                                id="applicantLimit" 
-                                min="1" 
-                                placeholder="Optional"
-                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 shadow-sm bg-white"
-                            >
-                        </div>
+            <!-- Options Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Applicant Limit -->
+                <div>
+                    <label for="applicantLimit" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Number of Applicants to Process
+                    </label>
+                    <input type="number" id="applicantLimit" min="1" value="10"
+                        class="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white">
+                </div>
 
-                        <div class="bg-white rounded-lg border border-gray-100 p-6">
-                            <label class="block text-base font-medium text-gray-700 mb-2">
-                                Message Approval
-                            </label>
-                            <p class="text-sm text-gray-500 mb-4">Require confirmation before sending each message</p>
-                            <div class="flex items-center space-x-3">
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" id="requireApproval" class="sr-only peer" checked>
-                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-500 rounded-lg peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
-                                </label>
-                                <span class="text-sm text-gray-600" id="approvalStatus">Enabled</span>
-                            </div>
-                        </div>
+                <!-- Approval Toggle -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Require Approval Before Sending
+                    </label>
+                    <div class="relative inline-block w-12 mr-2 align-middle select-none">
+                        <input type="checkbox" id="approvalToggle" checked
+                            class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-200 dark:border-gray-700 dark:bg-gray-700 transition-transform duration-200 ease-in-out transform translate-x-0">
+                        <label for="approvalToggle"
+                            class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-200 dark:bg-gray-600 cursor-pointer"></label>
                     </div>
-
-                    <div class="flex justify-end">
-                        <button 
-                            id="generateBtn" 
-                            class="px-6 py-3 bg-primary-500 text-white rounded-lg hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors"
-                        >
-                            Generate Script
-                        </button>
-                    </div>
+                    <span id="approvalStatus" class="text-sm text-gray-600 dark:text-gray-400">Enabled</span>
                 </div>
             </div>
 
-            <!-- Generated Script Section -->
-            <div id="scriptCard" class="bg-white rounded-lg shadow-sm border border-gray-100 p-8 hidden">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4">Your Custom Script</h2>
-                <p class="text-sm text-gray-600 mb-6">Copy and paste this into your browser's console on the LinkedIn job applications page:</p>
-                
-                <div class="rounded-lg overflow-hidden border border-gray-200">
-                    <div class="flex justify-between items-center bg-gray-900 px-4 py-3 border-b border-gray-700">
-                        <div class="flex items-center space-x-2">
-                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                        </div>
-                        <div class="flex items-center">
-                            <span id="copySuccess" class="text-green-400 text-sm font-medium mr-3 hidden">Copied!</span>
-                            <button 
-                                id="copyBtn" 
-                                class="px-4 py-2 text-sm bg-gray-800 text-white rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors"
-                            >
-                                Copy Script
-                            </button>
-                        </div>
-                    </div>
-                    <pre class="max-h-[500px] overflow-y-auto"><code id="scriptContent" class="language-javascript"></code></pre>
-                </div>
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4">
+                <button id="generateScript"
+                    class="flex-1 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors duration-200">
+                    Generate Script
+                </button>
+                <button id="copyScript"
+                    class="flex-1 px-6 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-medium rounded-lg transition-colors duration-200">
+                    Copy Script
+                </button>
             </div>
+        </div>
 
-            <!-- Instructions Section -->
-            <div class="mt-12 space-y-6">
-                <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-8">
-                    <h3 class="text-xl font-semibold text-gray-900 mb-6">Quick Start Guide</h3>
-                    <ol class="list-none space-y-4 text-gray-700">
-                        <li class="flex items-center space-x-4">
-                            <span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-50 text-primary-600 flex items-center justify-center font-semibold">1</span>
-                            <span>Customize your message template above</span>
-                        </li>
-                        <li class="flex items-center space-x-4">
-                            <span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-50 text-primary-600 flex items-center justify-center font-semibold">2</span>
-                            <span>Set your preferred options</span>
-                        </li>
-                        <li class="flex items-center space-x-4">
-                            <span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-50 text-primary-600 flex items-center justify-center font-semibold">3</span>
-                            <span>Click "Generate Script" to create your automation script</span>
-                        </li>
-                        <li class="flex items-center space-x-4">
-                            <span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary-50 text-primary-600 flex items-center justify-center font-semibold">4</span>
-                            <span>Copy the generated script</span>
-                        </li>
-                    </ol>
-                </div>
-
-                <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-8">
-                    <h3 class="text-xl font-semibold text-gray-900 mb-6">Detailed Instructions</h3>
-                    <div class="space-y-6 text-gray-700">
-                        <div>
-                            <h4 class="font-medium text-base mb-2">1. Prepare LinkedIn</h4>
-                            <p class="text-sm">Visit your LinkedIn job post and navigate to the view where all candidates are shown</p>
-                        </div>
-                        <div>
-                            <h4 class="font-medium text-base mb-2">2. Open Developer Console</h4>
-                            <p class="text-sm">Press F12 or right-click and select "Inspect" to open Developer Tools, then click on the "Console" tab</p>
-                        </div>
-                        <div>
-                            <h4 class="font-medium text-base mb-2">3. Enable Pasting</h4>
-                            <p class="text-sm">If this is your first time, type "allow pasting" in the console when prompted</p>
-                        </div>
-                        <div>
-                            <h4 class="font-medium text-base mb-2">4. Run the Script</h4>
-                            <p class="text-sm">Paste the generated script and press Enter to start the automation</p>
-                        </div>
-                        <div>
-                            <h4 class="font-medium text-base mb-2">5. Multiple Pages</h4>
-                            <p class="text-sm">Remember to run the script again when you navigate to the next page of applicants</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <!-- Instructions Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">How to Use</h2>
+            <ol class="list-decimal list-inside space-y-2 text-gray-600 dark:text-gray-400">
+                <li>Customize your message template using the editor above</li>
+                <li>Set the number of applicants you want to process</li>
+                <li>Toggle message approval if needed</li>
+                <li>Click "Generate Script" and copy the code</li>
+                <li>Paste the code in LinkedIn's developer console (F12)</li>
+            </ol>
         </div>
     </div>
 
-    <footer class="bg-white border-t border-gray-100 py-6 mt-12">
-        <div class="container mx-auto px-4 text-center">
-            <p class="text-sm text-gray-600">Access this tool at: <a href="https://your-domain.com" class="text-primary-500 hover:text-primary-600 font-medium">https://your-domain.com</a></p>
-        </div>
-    </footer>
+    <!-- Theme Toggle -->
+    <button id="themeToggle" class="fixed bottom-4 right-4 p-3 bg-white dark:bg-gray-800 rounded-full shadow-lg">
+        <svg class="w-6 h-6 text-gray-800 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path id="themeIcon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+        </svg>
+    </button>
 
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.0-rc.2/dist/quill.min.js"></script>
     <script>
-        document.getElementById('generateBtn').addEventListener('click', generateScript);
-        document.getElementById('copyBtn').addEventListener('click', copyScript);
-        document.getElementById('requireApproval').addEventListener('change', updateApprovalStatus);
+        // Initialize Quill editor
+        const quill = new Quill('#editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    [{ 'color': [] }, { 'background': [] }],
+                    ['clean']
+                ]
+            },
+            placeholder: 'Write your message template here...'
+        });
 
-        function updateApprovalStatus() {
-            const checkbox = document.getElementById('requireApproval');
-            const status = document.getElementById('approvalStatus');
-            status.textContent = checkbox.checked ? 'Enabled' : 'Disabled';
-        }
+        // Set default message
+        quill.setContents([
+            { insert: 'Hi {name},\n\n' },
+            { insert: 'Thank you for applying to our position. We\'re currently reviewing applications and will get back to you soon.\n\n' },
+            { insert: 'Best regards,\nYour Name' }
+        ]);
 
-        function generateScript() {
-            const messageTemplate = document.getElementById('messageTemplate').value;
-            const applicantLimit = document.getElementById('applicantLimit').value;
-            const requireApproval = document.getElementById('requireApproval').checked;
-
-            // Create the script with the customized values
-            const script = generateFullScript(messageTemplate, applicantLimit, requireApproval);
-            
-            // Display the script with syntax highlighting
-            const scriptContent = document.getElementById('scriptContent');
-            scriptContent.textContent = script;
-            Prism.highlightElement(scriptContent);
-            
-            // Show the script card
-            const scriptCard = document.getElementById('scriptCard');
-            scriptCard.classList.remove('hidden');
-            
-            // Scroll to the script card
-            scriptCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-
-        function copyScript() {
-            const scriptContent = document.getElementById('scriptContent').textContent;
-            navigator.clipboard.writeText(scriptContent).then(() => {
-                const copySuccess = document.getElementById('copySuccess');
-                copySuccess.classList.remove('hidden');
-                setTimeout(() => {
-                    copySuccess.classList.add('hidden');
-                }, 2000);
-            });
-        }
-
-        function generateFullScript(messageTemplate, applicantLimit, requireApproval) {
-            return `// Configuration
-const config = {
-    messageTemplate: \`${messageTemplate}\`,
-    delayBetweenMessages: 3000,
-    applicantLimit: ${applicantLimit ? applicantLimit : 'null'},  // Set a number here to limit applicants, null for processing all
-    requireApproval: ${requireApproval}  // Whether to ask for confirmation before sending each message
-};
-
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-const waitForElement = async (selector, timeout = 10000) => {
-    const startTime = Date.now();
-    while (Date.now() - startTime < timeout) {
-        const element = document.querySelector(selector);
-        if (element) return element;
-        await sleep(500);
-    }
-    return null;
-};
-
-const closeAllMessageWindows = async () => {
-    try {
-        // Find all close buttons and close them
-        const closeButtons = document.querySelectorAll('.msg-overlay-bubble-header__control.artdeco-button--circle');
-        console.log(\`Found \${closeButtons.length} open message windows to close\`);
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
         
-        for (const button of closeButtons) {
-            button.click();
-            await sleep(1000); // Wait between each close action
-        }
-        
-        // Double check no windows remain
-        const remainingWindows = document.querySelectorAll('.msg-overlay-conversation-bubble--is-active');
-        if (remainingWindows.length > 0) {
-            console.log(\`Attempting to close \${remainingWindows.length} remaining windows\`);
-            for (const window of remainingWindows) {
-                const closeBtn = window.querySelector('.msg-overlay-bubble-header__control.artdeco-button--circle');
-                if (closeBtn) closeBtn.click();
-                await sleep(1000);
-            }
-        }
-        
-        await sleep(2000); // Final wait to ensure UI is settled
-        return true;
-    } catch (error) {
-        console.error('Error closing message windows:', error);
-        return false;
-    }
-};
-
-const verifyCorrectChatWindow = async (expectedName) => {
-    await sleep(2000);
-    
-    // Look for the name in the profile card that appears in the message window
-    const nameInHeader = document.querySelector('.msg-s-profile-card .artdeco-entity-lockup__title');
-    if (!nameInHeader) {
-        console.log('Profile card name not found');
-        return false;
-    }
-
-    const headerText = nameInHeader.textContent.trim();
-    console.log(\`Current chat window header: "\${headerText}"\`);
-    console.log(\`Expected name: "\${expectedName}"\`);
-    
-    // More flexible name matching
-    const nameParts = expectedName.toLowerCase().split(' ');
-    const headerLower = headerText.toLowerCase();
-    
-    // Check if any part of the name is in the header
-    const nameMatch = nameParts.some(part => headerLower.includes(part));
-    
-    if (!nameMatch) {
-        console.log('Name mismatch in chat window');
-        return false;
-    }
-
-    return true;
-};
-
-const setMessageContent = async (messageBox, text) => {
-    try {
-        // Focus on message box
-        messageBox.click();
-        await sleep(2000);
-
-        // Clear existing content
-        messageBox.innerHTML = '';
-        await sleep(1000);
-
-        // Set new content
-        const paragraphs = text.split('\\n').map(line => 
-            \`<p>\${line.trim() || '<br>'}</p>\`
-        ).join('');
-        
-        messageBox.innerHTML = paragraphs;
-
-        // Trigger input events
-        messageBox.dispatchEvent(new Event('input', { bubbles: true }));
-        messageBox.dispatchEvent(new Event('change', { bubbles: true }));
-        
-        // Verify content was set
-        await sleep(1000);
-        const contentLength = messageBox.textContent.length;
-        console.log(\`Message content length: \${contentLength}\`);
-        return contentLength > 0;
-    } catch (error) {
-        console.error('Error setting message:', error);
-        return false;
-    }
-};
-
-const processApplicant = async (applicantElement) => {
-    try {
-        // Get applicant name
-        const nameElement = applicantElement.querySelector('.artdeco-entity-lockup__title');
-        if (!nameElement) {
-            console.log('Could not find name element');
-            return;
-        }
-
-        const fullName = nameElement.textContent.trim();
-        const firstName = fullName.split(' ')[0];
-        console.log('\\nProcessing applicant:', fullName);
-
-        // Close any existing message boxes
-        await closeAllMessageWindows();
-        await sleep(2000);
-
-        // Click applicant to open profile
-        console.log('Opening applicant profile...');
-        applicantElement.click();
-        await sleep(3000);
-
-        // Click message button
-        console.log('Looking for message button...');
-        const messageBtn = await waitForElement('button[data-view-name="hiring-applicant-contact-message"]');
-        if (!messageBtn) {
-            console.log('Message button not found');
-            return;
-        }
-
-        messageBtn.click();
-        await sleep(3000);
-
-        // Verify correct chat window
-        const isCorrectWindow = await verifyCorrectChatWindow(fullName);
-        if (!isCorrectWindow) {
-            console.log('Wrong chat window opened. Skipping...');
-            await closeAllMessageWindows();
-            return;
-        }
-
-        // Find message box
-        const messageBox = await waitForElement('div.msg-form__contenteditable[contenteditable="true"][role="textbox"]');
-        if (!messageBox) {
-            console.log('Message box not found');
-            return;
-        }
-
-        // Set message content
-        console.log('Setting message content...');
-        const personalizedMessage = config.messageTemplate.replace('{firstName}', firstName);
-        const contentSet = await setMessageContent(messageBox, personalizedMessage);
-        if (!contentSet) {
-            console.log('Failed to set message content');
-            return;
-        }
-
-        let shouldSend = true;
-        if (config.requireApproval) {
-            shouldSend = confirm(
-                \`Ready to send message to: \${fullName}\\n\\n\` +
-                \`Click OK to send the message, or Cancel to skip.\`
+        themeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            themeIcon.setAttribute('d', isDark 
+                ? 'M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z'
+                : 'M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z'
             );
-        }
+        });
 
-        if (shouldSend) {
-            const sendButton = await waitForElement('button.msg-form__send-button[type="submit"]');
-            if (sendButton) {
-                sendButton.click();
-                console.log('Message sent to:', fullName);
-                await sleep(2000);
+        // Approval toggle functionality
+        const approvalToggle = document.getElementById('approvalToggle');
+        const approvalStatus = document.getElementById('approvalStatus');
+        
+        approvalToggle.addEventListener('change', function() {
+            approvalStatus.textContent = this.checked ? 'Enabled' : 'Disabled';
+        });
+
+        // Generate and copy script functionality
+        document.getElementById('generateScript').addEventListener('click', function() {
+            const message = quill.root.innerHTML;
+            const applicantLimit = document.getElementById('applicantLimit').value;
+            const requireApproval = document.getElementById('approvalToggle').checked;
+            
+            const script = `// LinkedIn Applicant Messenger Script
+const messageTemplate = \`${message}\`;
+const applicantLimit = ${applicantLimit};
+const requireApproval = ${requireApproval};
+
+async function processApplicants() {
+    const applicants = document.querySelectorAll('.applicant-card');
+    let processed = 0;
+
+    for (const applicant of applicants) {
+        if (processed >= applicantLimit) break;
+
+        try {
+            const name = applicant.querySelector('.applicant-name').textContent.trim();
+            const message = messageTemplate.replace(/{name}/g, name);
+            
+            const messageButton = applicant.querySelector('.message-button');
+            messageButton.click();
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            const messageInput = document.querySelector('.msg-form__contenteditable');
+            if (messageInput) {
+                messageInput.innerHTML = message;
+                messageInput.dispatchEvent(new Event('input', { bubbles: true }));
                 
-                // Close message box after sending
-                await closeAllMessageWindows();
-                await sleep(2000);
+                if (requireApproval) {
+                    const shouldSend = confirm('Send message to ' + name + '?');
+                    if (!shouldSend) {
+                        const closeButton = document.querySelector('.msg-overlay-bubble-header__control');
+                        if (closeButton) closeButton.click();
+                        continue;
+                    }
+                }
+                
+                const sendButton = document.querySelector('.msg-form__send-button');
+                if (sendButton) sendButton.click();
+                
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                processed++;
             }
-        } else {
-            console.log('Skipped sending to:', fullName);
-            await closeAllMessageWindows();
+        } catch (error) {
+            console.error('Error processing applicant:', error);
         }
-
-    } catch (error) {
-        console.error('Error processing applicant:', error);
-        await closeAllMessageWindows();
-        await sleep(2000);
     }
-};
+    
+    alert(\`Processed \${processed} applicants\`);
+}
 
-const processAllApplicants = async () => {
-    try {
-        const applicantLinks = Array.from(document.querySelectorAll('.hiring-applicants__list-item a'));
-        const totalApplicants = applicantLinks.length;
-        
-        // Determine how many applicants to process
-        const limit = config.applicantLimit || totalApplicants;
-        const applicantsToProcess = Math.min(limit, totalApplicants);
-        
-        console.log(\`Found \${totalApplicants} total applicants\`);
-        console.log(\`Will process \${applicantsToProcess} applicants\${config.applicantLimit ? ' (limited by config)' : ''}\`);
+processApplicants();`;
 
-        for (let i = 0; i < applicantsToProcess; i++) {
-            console.log(\`\\nProcessing applicant \${i + 1} of \${applicantsToProcess}\`);
-            await processApplicant(applicantLinks[i]);
-            await sleep(3000);
-        }
-        
-        console.log('\\nFinished processing applicants');
-        console.log(\`Processed \${applicantsToProcess} out of \${totalApplicants} total applicants\`);
-    } catch (error) {
-        console.error('Error in main process:', error);
-    }
-};
+            document.getElementById('copyScript').dataset.script = script;
+            alert('Script generated! Click "Copy Script" to copy it to your clipboard.');
+        });
 
-// Start the process
-console.log('Starting to process applicants...');
-processAllApplicants().then(() => {
-    console.log('Script completed');
-}).catch(error => {
-    console.error('Fatal error:', error);
-});`;
-        }
+        document.getElementById('copyScript').addEventListener('click', function() {
+            const script = this.dataset.script;
+            if (script) {
+                navigator.clipboard.writeText(script).then(() => {
+                    alert('Script copied to clipboard!');
+                }).catch(err => {
+                    console.error('Failed to copy script:', err);
+                    alert('Failed to copy script. Please try again.');
+                });
+            } else {
+                alert('Please generate the script first!');
+            }
+        });
     </script>
 </body>
 </html> 
