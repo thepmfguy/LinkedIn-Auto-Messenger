@@ -273,10 +273,11 @@ async function processApplicants() {
         // Wait for the applicant list to load
         await new Promise(resolve => setTimeout(resolve, 2000));
         
-        // Find all applicant cards
-        const applicants = document.querySelectorAll('li.artdeco-list__item');
+        // Find all applicant cards using the exact selector structure
+        const applicants = document.querySelectorAll('.applicant-card');
+        
         if (!applicants.length) {
-            throw new Error('No applicants found. Make sure you are on the correct LinkedIn page.');
+            throw new Error('No applicants found. Please make sure you are on the LinkedIn Jobs page showing the list of applicants.');
         }
         
         let processed = 0;
@@ -286,30 +287,37 @@ async function processApplicants() {
             if (processed >= applicantLimit) break;
 
             try {
-                // Get applicant name
-                const nameElement = applicant.querySelector('.artdeco-entity-lockup__title');
-                if (!nameElement) continue;
+                // Get applicant name using the exact selector
+                const nameElement = applicant.querySelector('.applicant-name');
+                if (!nameElement) {
+                    console.log('Could not find name element, skipping applicant');
+                    continue;
+                }
                 
-                const name = nameElement.textContent.trim().split('\\n')[0];
+                const name = nameElement.textContent.trim();
                 console.log(\`Processing applicant: \${name}\`);
 
-                // Find and click message button
-                const messageButton = applicant.querySelector('button[aria-label^="Message"]');
+                // Find and click message button using the exact selector
+                const messageButton = applicant.querySelector('.message-button');
                 if (!messageButton) {
                     console.log(\`No message button found for \${name}\`);
                     continue;
                 }
+                
                 messageButton.click();
+                console.log('Clicked message button');
                 
                 // Wait for message dialog to open
-                await new Promise(resolve => setTimeout(resolve, 1500));
+                await new Promise(resolve => setTimeout(resolve, 2000));
                 
-                // Find message input and send button
-                const messageInput = document.querySelector('.msg-form__contenteditable[contenteditable="true"]');
-                const sendButton = document.querySelector('button.msg-form__send-button');
+                // Find message input and send button using the exact selectors
+                const messageInput = document.querySelector('.msg-form__contenteditable');
+                const sendButton = document.querySelector('.msg-form__send-button');
                 
                 if (!messageInput || !sendButton) {
                     console.log('Message dialog elements not found');
+                    const closeButton = document.querySelector('.msg-overlay-bubble-header__control');
+                    if (closeButton) closeButton.click();
                     continue;
                 }
 
@@ -319,12 +327,12 @@ async function processApplicants() {
                 
                 // Trigger input event to enable send button
                 messageInput.dispatchEvent(new Event('input', { bubbles: true }));
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise(resolve => setTimeout(resolve, 1000));
 
                 if (requireApproval) {
                     const shouldSend = confirm(\`Send message to \${name}?\`);
                     if (!shouldSend) {
-                        const closeButton = document.querySelector('button[data-control-name="overlay.close_conversation_window"]');
+                        const closeButton = document.querySelector('.msg-overlay-bubble-header__control');
                         if (closeButton) closeButton.click();
                         continue;
                     }
@@ -336,10 +344,10 @@ async function processApplicants() {
                 console.log(\`Message sent to \${name}\`);
                 
                 // Wait between messages to avoid rate limiting
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                await new Promise(resolve => setTimeout(resolve, 2500));
                 
                 // Close the message dialog if it's still open
-                const closeButton = document.querySelector('button[data-control-name="overlay.close_conversation_window"]');
+                const closeButton = document.querySelector('.msg-overlay-bubble-header__control');
                 if (closeButton) closeButton.click();
                 
             } catch (error) {
@@ -351,12 +359,13 @@ async function processApplicants() {
         alert(\`Successfully processed \${processed} applicants\`);
         
     } catch (error) {
-        alert(\`Error: \${error.message}\`);
+        alert(\`Error: \${error.message}\nPlease make sure you are on the LinkedIn Jobs page showing the list of applicants.\`);
         console.error('Script error:', error);
     }
 }
 
 // Run the script
+console.log('Starting LinkedIn Applicant Messenger...');
 processApplicants().then(() => {
     console.log('Script completed');
 }).catch(error => {
