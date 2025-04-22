@@ -267,7 +267,8 @@
 const config = {
     messageTemplate: \`${message}\`,
     delayBetweenMessages: 3000,
-    applicantLimit: ${applicantLimit}  // Set by user input
+    applicantLimit: ${applicantLimit},  // Set by user input
+    requireApproval: ${requireApproval}  // Added explicit approval config
 };
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -283,30 +284,48 @@ const waitForElement = async (selector, timeout = 10000) => {
 };
 
 const closeAllMessageWindows = async () => {
-    // Find all close buttons for message windows
-    const closeButtons = document.querySelectorAll('button.msg-overlay-bubble-header__control.artdeco-button--circle');
-    console.log(\`Found \${closeButtons.length} open message windows to close\`);
+    let attempts = 0;
+    let maxAttempts = 3;
     
-    for (const button of closeButtons) {
-        button.click();
-        await sleep(1000);
+    while (attempts < maxAttempts) {
+        // Find all types of message windows and close buttons
+        const closeButtons = [
+            ...document.querySelectorAll('button.msg-overlay-bubble-header__control.artdeco-button--circle'),
+            ...document.querySelectorAll('button.msg-overlay-bubble-header__button'),
+            ...document.querySelectorAll('button[data-control-name="overlay.close_conversation_window"]'),
+            ...document.querySelectorAll('button.artdeco-modal__dismiss')
+        ];
         
-        // Handle any discard draft dialogs
-        const discardButton = document.querySelector('button[data-control-name="discard_conversation"]');
-        if (discardButton) {
-            console.log('Discard dialog found, clicking discard...');
-            discardButton.click();
+        if (closeButtons.length === 0) break;
+        
+        console.log(\`Attempt \${attempts + 1}: Found \${closeButtons.length} message windows to close\`);
+        
+        for (const button of closeButtons) {
+            button.click();
             await sleep(1000);
+            
+            // Handle any discard draft dialogs
+            const discardButton = document.querySelector('button[data-control-name="discard_conversation"]');
+            if (discardButton) {
+                console.log('Found discard dialog, clicking discard...');
+                discardButton.click();
+                await sleep(1000);
+            }
         }
+        
+        attempts++;
+        await sleep(1000);
     }
     
-    await sleep(1000);
+    // Verify all windows are closed
+    const remainingWindows = document.querySelectorAll('.msg-overlay-conversation-bubble--is-active, .msg-overlay-conversation-bubble');
+    if (remainingWindows.length > 0) {
+        console.log(\`Warning: \${remainingWindows.length} message windows could not be closed\`);
+    } else {
+        console.log('All message windows closed successfully');
+    }
+    
     return true;
-};
-
-const isGoodFit = (applicant) => {
-    const ratingElement = applicant.querySelector('.hiring-applicant-rating--good-fit');
-    return !!ratingElement;
 };
 
 const setMessageContent = async (messageBox, text) => {
@@ -314,15 +333,22 @@ const setMessageContent = async (messageBox, text) => {
         // Focus and clear existing content
         messageBox.click();
         await sleep(1000);
+        
+        // Clear existing content
         messageBox.innerHTML = '';
         await sleep(500);
 
         // Set new content
         messageBox.innerHTML = text;
-        messageBox.dispatchEvent(new Event('input', { bubbles: true }));
         
+        // Trigger input events
+        messageBox.dispatchEvent(new Event('input', { bubbles: true }));
+        messageBox.dispatchEvent(new Event('change', { bubbles: true }));
+        
+        // Verify content was set
         await sleep(1000);
-        return true;
+        console.log('Message content length:', messageBox.textContent.length);
+        return messageBox.textContent.length > 0;
     } catch (error) {
         console.error('Error setting message:', error);
         return false;
@@ -331,14 +357,6 @@ const setMessageContent = async (messageBox, text) => {
 
 const processApplicant = async (applicant) => {
     try {
-        // Check if applicant is marked as "Good fit"
-        if (isGoodFit(applicant)) {
-            const nameElement = applicant.querySelector('.artdeco-entity-lockup__title');
-            const name = nameElement ? nameElement.textContent.trim() : 'Applicant';
-            console.log(\`Skipping \${name} - marked as Good fit\`);
-            return false;
-        }
-
         // Get applicant name
         const nameElement = applicant.querySelector('.artdeco-entity-lockup__title');
         if (!nameElement) {
@@ -347,11 +365,14 @@ const processApplicant = async (applicant) => {
         }
 
         const name = nameElement.textContent.trim();
-        console.log('Processing applicant:', name);
+        console.log('\\nProcessing applicant:', name);
 
         // Click the applicant to ensure their profile is active
-        applicant.querySelector('a').click();
-        await sleep(2000);
+        const applicantLink = applicant.querySelector('a');
+        if (applicantLink) {
+            applicantLink.click();
+            await sleep(2000);
+        }
 
         // Find and click message button
         const messageButton = document.querySelector('button[data-view-name="hiring-applicant-contact-message"]');
@@ -374,6 +395,7 @@ const processApplicant = async (applicant) => {
         }
 
         // Set message content
+        console.log('Setting message content...');
         const personalizedMessage = config.messageTemplate.replace(/{name}/g, name);
         const contentSet = await setMessageContent(messageInput, personalizedMessage);
         
@@ -383,21 +405,30 @@ const processApplicant = async (applicant) => {
             return false;
         }
 
-        if (${requireApproval}) {
-            const shouldSend = confirm(\`Send message to \${name}?\`);
+        // Only ask for confirmation if requireApproval is true
+        if (config.requireApproval) {
+            const shouldSend = confirm(\`Ready to send message to: \${name}\\n\\nClick OK to send, or Cancel to skip.\`);
             if (!shouldSend) {
-                console.log('Skipped sending to:', name);
+                console.log('User skipped sending to:', name);
                 await closeAllMessageWindows();
                 return false;
             }
         }
 
         // Send message
+        console.log('Clicking send button...');
         sendButton.click();
-        console.log('Message sent to:', name);
-        
-        // Wait and close message window
         await sleep(2000);
+        
+        // Verify message was sent
+        const messageSent = !document.querySelector('div.msg-form__contenteditable[contenteditable="true"][role="textbox"]');
+        if (messageSent) {
+            console.log('Message sent successfully to:', name);
+        } else {
+            console.log('Send button clicked but message may not have been sent');
+        }
+        
+        // Close message window
         await closeAllMessageWindows();
         
         return true;
@@ -428,21 +459,15 @@ const processAllApplicants = async () => {
         const applicantsToProcess = Math.min(limit, totalApplicants);
         
         console.log(\`Found \${totalApplicants} applicants. Will process \${applicantsToProcess}.\`);
+        console.log(\`Approval required: \${config.requireApproval ? 'Yes' : 'No'}\`);
 
         let processed = 0;
-        let skipped = 0;
-        
         for (let i = 0; i < applicantsToProcess; i++) {
             console.log(\`\\nProcessing applicant \${i + 1} of \${applicantsToProcess}\`);
             
             // Ensure all message windows are closed before each applicant
             await closeAllMessageWindows();
             await sleep(2000);
-            
-            if (isGoodFit(applicants[i])) {
-                skipped++;
-                continue;
-            }
             
             const success = await processApplicant(applicants[i]);
             if (success) processed++;
@@ -455,10 +480,9 @@ const processAllApplicants = async () => {
         await closeAllMessageWindows();
         
         console.log(\`\\nFinished processing applicants\`);
-        console.log(\`Successfully processed \${processed} applicants\`);
-        console.log(\`Skipped \${skipped} applicants marked as Good fit\`);
+        console.log(\`Successfully processed \${processed} out of \${applicantsToProcess} applicants\`);
         
-        alert(\`Successfully processed \${processed} applicants\\nSkipped \${skipped} applicants marked as Good fit\`);
+        alert(\`Successfully processed \${processed} out of \${applicantsToProcess} applicants\`);
     } catch (error) {
         alert(\`Error: \${error.message}\`);
         console.error('Script error:', error);
@@ -467,6 +491,7 @@ const processAllApplicants = async () => {
 
 // Start the process
 console.log('Starting LinkedIn Applicant Messenger...');
+console.log('Approval required:', ${requireApproval} ? 'Yes' : 'No');
 processAllApplicants().then(() => {
     console.log('Script completed');
 }).catch(error => {
