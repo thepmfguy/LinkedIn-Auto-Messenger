@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkedIn Applicant Messenger</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            200: '#bae0fd',
+                            300: '#7cc8fb',
+                            400: '#36acf6',
+                            500: '#0c91e8',
+                            600: '#0073c6',
+                            700: '#005ca4',
+                            800: '#004d87',
+                            900: '#004170',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #0c91e8 0%, #004170 100%);
+        }
+        .message-box {
+            min-height: 200px;
+            resize: vertical;
+        }
+        .code-box {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 24px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .toggle-slider {
+            background-color: #0c91e8;
+        }
+        input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+        .card {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.9);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans">
+    <div class="gradient-bg text-white py-16">
+        <div class="container mx-auto px-4">
+            <div class="max-w-3xl mx-auto text-center">
+                <h1 class="text-5xl font-bold mb-6">LinkedIn Applicant Messenger</h1>
+                <p class="text-xl opacity-90">Automate your applicant messaging with personalized templates</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-12 -mt-8">
+        <div class="max-w-3xl mx-auto">
+            <div class="card rounded-2xl shadow-xl p-8 mb-8">
+                <div class="bg-blue-50 rounded-xl p-6 mb-8">
+                    <h3 class="text-lg font-semibold text-primary-700 mb-3">How to Use</h3>
+                    <ol class="list-decimal list-inside space-y-2 text-gray-700">
+                        <li>Customize your message template below</li>
+                        <li>Set any other options you want to change</li>
+                        <li>Click "Generate Script" to create your custom script</li>
+                        <li>Click "Copy Script" to copy it to your clipboard</li>
+                        <li>Go to LinkedIn job application page</li>
+                        <li>Open developer console (F12)</li>
+                        <li>Paste the script and press Enter</li>
+                    </ol>
+                </div>
+
+                <div class="space-y-8">
+                    <div>
+                        <label for="messageTemplate" class="block text-sm font-medium text-gray-700 mb-2">
+                            Message Template (Use {firstName} for personalization):
+                        </label>
+                        <textarea 
+                            id="messageTemplate" 
+                            class="message-box w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 shadow-sm"
+                        >Hi {firstName},
+
+Thanks for applying for the Tars Content Writer Internship.
+
+Please talk to this Application Qualifying Agent: https://chatbot.hellotars.com/conv/w28F1a
+
+It will ask you all the basic qualifying questions. If you qualify, it will give you a detailed content writing assignment.
+
+For ease of access, content Writing Assignment Details here: https://hellotars.notion.site/Content-Marketing-Tars-Assignment-1-c16e8cb2d3b644918d76c81fccaac1ac?pvs=4
+
+You need to submit the assignment to us within the next 3 days from now, to qualify for the next Phone Screen round.
+
+All the best :)
+Regards
+Gaurav</textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="applicantLimit" class="block text-sm font-medium text-gray-700 mb-2">
+                                Applicant Limit (leave empty to process all):
+                            </label>
+                            <input 
+                                type="number" 
+                                id="applicantLimit" 
+                                min="1" 
+                                placeholder="Optional"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 shadow-sm"
+                            >
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Require Approval Before Sending:
+                            </label>
+                            <div class="flex items-center space-x-3">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="requireApproval" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                                <span class="text-sm text-gray-600" id="approvalStatus">Enabled</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button 
+                            id="generateBtn" 
+                            class="px-8 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                        >
+                            Generate Script
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="scriptCard" class="card rounded-2xl shadow-xl p-8 hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Your Custom Script</h2>
+                <p class="text-gray-600 mb-6">Copy and paste this into your browser's console on the LinkedIn job applications page:</p>
+                
+                <div class="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
+                    <div class="flex justify-between items-center bg-gray-100 px-6 py-3 border-b border-gray-200">
+                        <span class="text-sm font-medium text-gray-700">JavaScript</span>
+                        <div class="flex items-center">
+                            <span id="copySuccess" class="text-green-600 font-medium mr-3 hidden">Copied!</span>
+                            <button 
+                                id="copyBtn" 
+                                class="px-4 py-2 text-sm bg-white text-primary-600 border border-primary-600 rounded-lg hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors"
+                            >
+                                Copy Script
+                            </button>
+                        </div>
+                    </div>
+                    <div id="scriptContent" class="code-box p-6 font-mono text-sm text-gray-800"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-gray-100 py-8">
+        <div class="container mx-auto px-4 text-center text-gray-600">
+            <p>Access this tool at: <a href="https://your-domain.com" class="text-primary-600 hover:text-primary-700 font-medium">https://your-domain.com</a></p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('generateBtn').addEventListener('click', generateScript);
+        document.getElementById('copyBtn').addEventListener('click', copyScript);
+        document.getElementById('requireApproval').addEventListener('change', updateApprovalStatus);
+
+        function updateApprovalStatus() {
+            const checkbox = document.getElementById('requireApproval');
+            const status = document.getElementById('approvalStatus');
+            status.textContent = checkbox.checked ? 'Enabled' : 'Disabled';
+        }
+
+        function generateScript() {
+            const messageTemplate = document.getElementById('messageTemplate').value;
+            const applicantLimit = document.getElementById('applicantLimit').value;
+            const requireApproval = document.getElementById('requireApproval').checked;
+
+            // Create the script with the customized values
+            const script = generateFullScript(messageTemplate, applicantLimit, requireApproval);
+            
+            // Display the script
+            document.getElementById('scriptContent').textContent = script;
+            document.getElementById('scriptCard').classList.remove('hidden');
+            
+            // Scroll to the script card
+            document.getElementById('scriptCard').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function copyScript() {
+            const scriptContent = document.getElementById('scriptContent').textContent;
+            navigator.clipboard.writeText(scriptContent).then(() => {
+                const copySuccess = document.getElementById('copySuccess');
+                copySuccess.classList.remove('hidden');
+                setTimeout(() => {
+                    copySuccess.classList.add('hidden');
+                }, 2000);
+            });
+        }
+
+        function generateFullScript(messageTemplate, applicantLimit, requireApproval) {
+            return `// Configuration
+const config = {
+    messageTemplate: \`${messageTemplate}\`,
+    delayBetweenMessages: 3000,
+    applicantLimit: ${applicantLimit ? applicantLimit : 'null'},  // Set a number here to limit applicants, null for processing all
+    requireApproval: ${requireApproval}  // Whether to ask for confirmation before sending each message
+};
+
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+const waitForElement = async (selector, timeout = 10000) => {
+    const startTime = Date.now();
+    while (Date.now() - startTime < timeout) {
+        const element = document.querySelector(selector);
+        if (element) return element;
+        await sleep(500);
+    }
+    return null;
+};
+
+const closeAllMessageWindows = async () => {
+    try {
+        // Find all close buttons and close them
+        const closeButtons = document.querySelectorAll('.msg-overlay-bubble-header__control.artdeco-button--circle');
+        console.log(\`Found \${closeButtons.length} open message windows to close\`);
+        
+        for (const button of closeButtons) {
+            button.click();
+            await sleep(1000); // Wait between each close action
+        }
+        
+        // Double check no windows remain
+        const remainingWindows = document.querySelectorAll('.msg-overlay-conversation-bubble--is-active');
+        if (remainingWindows.length > 0) {
+            console.log(\`Attempting to close \${remainingWindows.length} remaining windows\`);
+            for (const window of remainingWindows) {
+                const closeBtn = window.querySelector('.msg-overlay-bubble-header__control.artdeco-button--circle');
+                if (closeBtn) closeBtn.click();
+                await sleep(1000);
+            }
+        }
+        
+        await sleep(2000); // Final wait to ensure UI is settled
+        return true;
+    } catch (error) {
+        console.error('Error closing message windows:', error);
+        return false;
+    }
+};
+
+const verifyCorrectChatWindow = async (expectedName) => {
+    await sleep(2000);
+    
+    // Look for the name in the profile card that appears in the message window
+    const nameInHeader = document.querySelector('.msg-s-profile-card .artdeco-entity-lockup__title');
+    if (!nameInHeader) {
+        console.log('Profile card name not found');
+        return false;
+    }
+
+    const headerText = nameInHeader.textContent.trim();
+    console.log(\`Current chat window header: "\${headerText}"\`);
+    console.log(\`Expected name: "\${expectedName}"\`);
+    
+    // More flexible name matching
+    const nameParts = expectedName.toLowerCase().split(' ');
+    const headerLower = headerText.toLowerCase();
+    
+    // Check if any part of the name is in the header
+    const nameMatch = nameParts.some(part => headerLower.includes(part));
+    
+    if (!nameMatch) {
+        console.log('Name mismatch in chat window');
+        return false;
+    }
+
+    return true;
+};
+
+const setMessageContent = async (messageBox, text) => {
+    try {
+        // Focus on message box
+        messageBox.click();
+        await sleep(2000);
+
+        // Clear existing content
+        messageBox.innerHTML = '';
+        await sleep(1000);
+
+        // Set new content
+        const paragraphs = text.split('\\n').map(line => 
+            \`<p>\${line.trim() || '<br>'}</p>\`
+        ).join('');
+        
+        messageBox.innerHTML = paragraphs;
+
+        // Trigger input events
+        messageBox.dispatchEvent(new Event('input', { bubbles: true }));
+        messageBox.dispatchEvent(new Event('change', { bubbles: true }));
+        
+        // Verify content was set
+        await sleep(1000);
+        const contentLength = messageBox.textContent.length;
+        console.log(\`Message content length: \${contentLength}\`);
+        return contentLength > 0;
+    } catch (error) {
+        console.error('Error setting message:', error);
+        return false;
+    }
+};
+
+const processApplicant = async (applicantElement) => {
+    try {
+        // Get applicant name
+        const nameElement = applicantElement.querySelector('.artdeco-entity-lockup__title');
+        if (!nameElement) {
+            console.log('Could not find name element');
+            return;
+        }
+
+        const fullName = nameElement.textContent.trim();
+        const firstName = fullName.split(' ')[0];
+        console.log('\\nProcessing applicant:', fullName);
+
+        // Close any existing message boxes
+        await closeAllMessageWindows();
+        await sleep(2000);
+
+        // Click applicant to open profile
+        console.log('Opening applicant profile...');
+        applicantElement.click();
+        await sleep(3000);
+
+        // Click message button
+        console.log('Looking for message button...');
+        const messageBtn = await waitForElement('button[data-view-name="hiring-applicant-contact-message"]');
+        if (!messageBtn) {
+            console.log('Message button not found');
+            return;
+        }
+
+        messageBtn.click();
+        await sleep(3000);
+
+        // Verify correct chat window
+        const isCorrectWindow = await verifyCorrectChatWindow(fullName);
+        if (!isCorrectWindow) {
+            console.log('Wrong chat window opened. Skipping...');
+            await closeAllMessageWindows();
+            return;
+        }
+
+        // Find message box
+        const messageBox = await waitForElement('div.msg-form__contenteditable[contenteditable="true"][role="textbox"]');
+        if (!messageBox) {
+            console.log('Message box not found');
+            return;
+        }
+
+        // Set message content
+        console.log('Setting message content...');
+        const personalizedMessage = config.messageTemplate.replace('{firstName}', firstName);
+        const contentSet = await setMessageContent(messageBox, personalizedMessage);
+        if (!contentSet) {
+            console.log('Failed to set message content');
+            return;
+        }
+
+        let shouldSend = true;
+        if (config.requireApproval) {
+            shouldSend = confirm(
+                \`Ready to send message to: \${fullName}\\n\\n\` +
+                \`Click OK to send the message, or Cancel to skip.\`
+            );
+        }
+
+        if (shouldSend) {
+            const sendButton = await waitForElement('button.msg-form__send-button[type="submit"]');
+            if (sendButton) {
+                sendButton.click();
+                console.log('Message sent to:', fullName);
+                await sleep(2000);
+                
+                // Close message box after sending
+                await closeAllMessageWindows();
+                await sleep(2000);
+            }
+        } else {
+            console.log('Skipped sending to:', fullName);
+            await closeAllMessageWindows();
+        }
+
+    } catch (error) {
+        console.error('Error processing applicant:', error);
+        await closeAllMessageWindows();
+        await sleep(2000);
+    }
+};
+
+const processAllApplicants = async () => {
+    try {
+        const applicantLinks = Array.from(document.querySelectorAll('.hiring-applicants__list-item a'));
+        const totalApplicants = applicantLinks.length;
+        
+        // Determine how many applicants to process
+        const limit = config.applicantLimit || totalApplicants;
+        const applicantsToProcess = Math.min(limit, totalApplicants);
+        
+        console.log(\`Found \${totalApplicants} total applicants\`);
+        console.log(\`Will process \${applicantsToProcess} applicants\${config.applicantLimit ? ' (limited by config)' : ''}\`);
+
+        for (let i = 0; i < applicantsToProcess; i++) {
+            console.log(\`\\nProcessing applicant \${i + 1} of \${applicantsToProcess}\`);
+            await processApplicant(applicantLinks[i]);
+            await sleep(3000);
+        }
+        
+        console.log('\\nFinished processing applicants');
+        console.log(\`Processed \${applicantsToProcess} out of \${totalApplicants} total applicants\`);
+    } catch (error) {
+        console.error('Error in main process:', error);
+    }
+};
+
+// Start the process
+console.log('Starting to process applicants...');
+processAllApplicants().then(() => {
+    console.log('Script completed');
+}).catch(error => {
+    console.error('Fatal error:', error);
+});`;
+        }
+    </script>
+</body>
+</html> 
