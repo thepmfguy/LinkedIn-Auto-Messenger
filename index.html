@@ -393,19 +393,12 @@ const setMessageContent = async (messageBox, text) => {
         messageBox.click();
         await sleep(1000);
         
-        // Clear existing content using selection API
-        document.execCommand('selectAll', false, null);
-        document.execCommand('delete', false, null);
+        // Clear existing content
+        messageBox.innerHTML = '';
         await sleep(500);
 
-        // Set new content using clipboard API
-        await navigator.clipboard.writeText(text);
-        document.execCommand('paste', false, null);
-        
-        // Fallback if execCommand didn't work
-        if (!messageBox.textContent) {
-            messageBox.innerHTML = text;
-        }
+        // Set new content using innerHTML
+        messageBox.innerHTML = text;
         
         // Trigger input events
         messageBox.dispatchEvent(new Event('input', { bubbles: true }));
@@ -413,8 +406,33 @@ const setMessageContent = async (messageBox, text) => {
         
         // Verify content was set
         await sleep(1000);
-        console.log('Message content length:', messageBox.textContent.length);
-        return messageBox.textContent.length > 0;
+        const contentLength = messageBox.textContent.length;
+        console.log('Message content length:', contentLength);
+        
+        // If content wasn't set, try alternative method
+        if (contentLength === 0) {
+            console.log('Trying alternative method to set content...');
+            
+            // Try using execCommand
+            document.execCommand('selectAll', false, null);
+            document.execCommand('delete', false, null);
+            await sleep(500);
+            
+            // Try direct textContent
+            messageBox.textContent = text;
+            await sleep(500);
+            
+            // Try innerText
+            messageBox.innerText = text;
+            await sleep(500);
+            
+            // Final verification
+            const finalLength = messageBox.textContent.length;
+            console.log('Final message content length:', finalLength);
+            return finalLength > 0;
+        }
+        
+        return contentLength > 0;
     } catch (error) {
         console.error('Error setting message:', error);
         return false;
