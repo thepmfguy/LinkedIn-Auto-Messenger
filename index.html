@@ -264,12 +264,15 @@
             const applicantLimit = document.getElementById('applicantLimit').value;
             const requireApproval = document.getElementById('approvalToggle').checked;
             
-            // Convert Quill delta to formatted text
+            // Convert Quill delta to formatted text and escape special characters
             let formattedMessage = '';
             message.ops.forEach(op => {
                 if (op.insert) {
-                    // Preserve line breaks
-                    formattedMessage += op.insert.replace(/\n/g, '\\n');
+                    // Escape backticks and preserve line breaks
+                    formattedMessage += op.insert
+                        .replace(/`/g, '\\`')
+                        .replace(/\n/g, '\\n')
+                        .replace(/\$/g, '\\$');
                 }
             });
             
