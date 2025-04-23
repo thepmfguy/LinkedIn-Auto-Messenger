@@ -57,7 +57,7 @@
             <div class="mb-4">
                 <div id="editor"></div>
             </div>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Use {name} to personalize messages with applicant names</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Use {firstName} to personalize messages with applicant names</p>
         </div>
 
         <!-- Options Grid -->
@@ -231,7 +231,7 @@
 
         // Set default message
         quill.setContents([
-            { insert: 'Hi {name},\n\n' },
+            { insert: 'Hi {firstName},\n\n' },
             { insert: 'Thank you for applying to our position. We\'re currently reviewing applications and will get back to you soon.\n\n' },
             { insert: 'Best regards,\nYour Name' }
         ]);
@@ -271,7 +271,6 @@
                     // Escape backticks, newlines, and other special characters
                     formattedMessage += op.insert
                         .replace(/`/g, '\\`')
-                        .replace(/\n/g, '\\n')
                         .replace(/\$/g, '\\$')
                         .replace(/\\/g, '\\\\')
                         .replace(/'/g, "\\'")
@@ -280,6 +279,8 @@
             });
             
             const script = `// LinkedIn Applicant Messenger Script
+
+// Configuration
 const config = {
     messageTemplate: \`${formattedMessage}\`,
     delayBetweenMessages: 3000,
@@ -299,349 +300,205 @@ const waitForElement = async (selector, timeout = 10000) => {
     return null;
 };
 
-const forceCloseMessageWindow = async () => {
-    try {
-        // Only target visible active conversations
-        const conversations = document.querySelectorAll('.msg-overlay-conversation-bubble--is-active:not([style*="display: none"])');
-        conversations.forEach(conv => {
-            conv.style.display = 'none';
-            conv.classList.remove('msg-overlay-conversation-bubble--is-active');
-        });
-        
-        // Only remove visible overlays
-        const overlays = document.querySelectorAll('.artdeco-modal-overlay:not([style*="display: none"])');
-        overlays.forEach(overlay => {
-            overlay.remove();
-        });
-        
-        return true;
-    } catch (error) {
-        console.error('Error in force close:', error);
+const closeCurrentMessageBox = async () => {
+const messageHeaders = document.querySelectorAll('div.msg-overlay-bubble-header__controls.display-flex.align-items-center');
+
+// Convert NodeList to Array and loop through each div
+Array.from(messageHeaders).forEach(header => {
+    const lastButton = header.lastElementChild;
+    if (lastButton) {
+        lastButton.click();
+    }
+});
+    return false;
+};
+
+const verifyCorrectChatWindow = async (expectedName) => {
+    await sleep(2000);
+    
+    // Look for the name in the profile card that appears in the message window
+    const nameInHeader = document.querySelector('.msg-s-profile-card .artdeco-entity-lockup__title');
+    if (!nameInHeader) {
+        console.log('Profile card name not found');
         return false;
     }
-};
 
-const isWindowVisible = (element) => {
-    if (!element) return false;
-    const style = window.getComputedStyle(element);
-    return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
-};
+    const headerText = nameInHeader.textContent.trim();
+    console.log('Current chat window header: ' + headerText);
+    console.log('Expected name: ' + expectedName);
+    
+    // More flexible name matching
+    const nameParts = expectedName.toLowerCase().split(' ');
+    const headerLower = headerText.toLowerCase();
+    
+    // Check if any part of the name is in the header
+    const nameMatch = nameParts.some(part => headerLower.includes(part));
+    
+    if (!nameMatch) {
+        console.log('Name mismatch in chat window');
+        return false;
+    }
 
-const closeAllMessageWindows = async (excludeActive = false) => {
-    let attempts = 0;
-    let maxAttempts = 3;
-    
-    while (attempts < maxAttempts) {
-        // Get all visible message windows
-        const visibleWindows = Array.from(document.querySelectorAll('.msg-overlay-conversation-bubble'))
-            .filter(isWindowVisible);
-            
-        // If excludeActive is true, don't close the window with an active message form
-        const windowsToClose = excludeActive ? 
-            visibleWindows.filter(window => !window.querySelector('.msg-form__contenteditable[contenteditable="true"]')) :
-            visibleWindows;
-            
-        const closeButtons = windowsToClose.map(window => 
-            window.querySelector('button.msg-overlay-bubble-header__control.artdeco-button--circle, button.msg-overlay-bubble-header__button')
-        ).filter(button => button && isWindowVisible(button));
-        
-        const visibleModalCloseButtons = Array.from(document.querySelectorAll('button.artdeco-modal__dismiss'))
-            .filter(isWindowVisible);
-            
-        const allCloseButtons = [...closeButtons, ...visibleModalCloseButtons];
-        
-        if (allCloseButtons.length === 0) {
-            console.log('No closeable message windows found');
-            break;
-        }
-        
-        console.log(\`Attempt \${attempts + 1}: Found \${allCloseButtons.length} closeable message windows\`);
-        
-        for (const button of allCloseButtons) {
-            try {
-                button.click();
-                await sleep(1000);
-                
-                // Only handle visible discard dialogs
-                const discardButton = Array.from(document.querySelectorAll('button[data-control-name="discard_conversation"]'))
-                    .find(isWindowVisible);
-                    
-                if (discardButton) {
-                    console.log('Found visible discard dialog, clicking discard...');
-                    discardButton.click();
-                    await sleep(1000);
-                }
-            } catch (error) {
-                console.error('Error clicking close button:', error);
-            }
-        }
-        
-        attempts++;
-        await sleep(1000);
-        
-        // Check if any windows that should be closed remain
-        const remainingCloseable = Array.from(document.querySelectorAll('.msg-overlay-conversation-bubble--is-active, .msg-overlay-conversation-bubble'))
-            .filter(window => {
-                if (!isWindowVisible(window)) return false;
-                if (excludeActive && window.querySelector('.msg-form__contenteditable[contenteditable="true"]')) return false;
-                return true;
-            });
-            
-        if (remainingCloseable.length === 0) {
-            console.log('All closeable message windows handled successfully');
-            return true;
-        }
-    }
-    
-    // If normal close didn't work and we're not excluding active windows, try force close
-    if (!excludeActive) {
-        console.log('Attempting force close of remaining windows...');
-        const forceClosed = await forceCloseMessageWindow();
-    }
-    
     return true;
 };
 
-const forceSetMessageContent = async (messageBox, text) => {
+const setMessageContent = async (messageBox, text) => {
     try {
-        // Force focus and clear
-        messageBox.focus();
+        // Focus on message box
         messageBox.click();
-        await sleep(500);
-        
-        // Force clear content using multiple methods
-        messageBox.innerHTML = '';
-        messageBox.textContent = '';
-        messageBox.innerText = '';
-        
-        // Convert escaped newlines back to actual newlines
-        const formattedText = text.replace(/\\n/g, '\n');
-        
-        // Force set content using multiple methods
-        messageBox.innerHTML = formattedText;
-        messageBox.textContent = formattedText;
-        messageBox.innerText = formattedText;
-        
-        // Force trigger events
-        const events = ['input', 'change', 'keydown', 'keyup', 'paste', 'compositionend'];
-        events.forEach(eventType => {
-            messageBox.dispatchEvent(new Event(eventType, { bubbles: true }));
-        });
-        
-        // Force focus again
-        messageBox.focus();
-        messageBox.click();
-        
-        await sleep(1000);
-        return true;
-    } catch (error) {
-        console.error('Error in forceSetMessageContent:', error);
-        return false;
-    }
-};
-
-const forceSendMessage = async (sendButton) => {
-    try {
-        // Force click using multiple methods
-        sendButton.click();
-        sendButton.dispatchEvent(new MouseEvent('click', {
-            bubbles: true,
-            cancelable: true,
-            view: window
-        }));
-        
-        // Try form submit
-        const form = document.querySelector('form.msg-form');
-        if (form) {
-            form.dispatchEvent(new SubmitEvent('submit', {
-                bubbles: true,
-                cancelable: true
-            }));
-        }
-        
-        // Try direct form submission
-        if (form) {
-            form.submit();
-        }
-        
-        // Try clicking any visible send buttons
-        const allSendButtons = document.querySelectorAll('button.msg-form__send-button');
-        allSendButtons.forEach(button => {
-            if (isWindowVisible(button)) {
-                button.click();
-                button.dispatchEvent(new MouseEvent('click', {
-                    bubbles: true,
-                    cancelable: true,
-                    view: window
-                }));
-            }
-        });
-        
         await sleep(2000);
-        return true;
+
+        // Clear existing content
+        messageBox.innerHTML = '';
+        await sleep(1000);
+
+        // Set new content
+        const paragraphs = text.split('\\n').map(line => {
+                if(line.trim() == '') {
+                    return '<br>';
+                } else {
+                    return '<p>' + line.trim() + '</p>';
+                }
+            }).join('');
+        
+        messageBox.innerHTML = paragraphs;
+
+        // Trigger input events
+        messageBox.dispatchEvent(new Event('input', { bubbles: true }));
+        messageBox.dispatchEvent(new Event('change', { bubbles: true }));
+        
+        // Verify content was set
+        await sleep(1000);
+        return messageBox.textContent.length > 0;
     } catch (error) {
-        console.error('Error in forceSendMessage:', error);
+        console.error('Error setting message:', error);
         return false;
     }
 };
 
-const processApplicant = async (applicant) => {
+const processApplicant = async (applicantElement) => {
     try {
         // Get applicant name
-        const nameElement = applicant.querySelector('.artdeco-entity-lockup__title');
+        const nameElement = applicantElement.querySelector('.artdeco-entity-lockup__title');
         if (!nameElement) {
             console.log('Could not find name element');
-            return false;
+            return;
         }
 
-        const name = nameElement.textContent.trim();
-        console.log('Processing applicant:', name);
+        const fullName = nameElement.textContent.trim();
+        const firstName = fullName.split(' ')[0];
+        console.log('\\nProcessing applicant:', fullName);
 
-        // Force close all message windows
-        await closeAllMessageWindows();
+        // Close any existing message boxes
+        await closeCurrentMessageBox();
         await sleep(2000);
 
-        // Force click applicant
-        const applicantLink = applicant.querySelector('a');
-        if (applicantLink) {
-            applicantLink.click();
-            await sleep(3000);
-        }
-
-        // Force click message button
-        const messageButton = document.querySelector('button[data-view-name="hiring-applicant-contact-message"]');
-        if (!messageButton) {
-            console.log('Message button not found');
-            return false;
-        }
-
-        messageButton.click();
+        // Click applicant to open profile
+        console.log('Opening applicant profile...');
+        applicantElement.click();
         await sleep(3000);
 
-        // Find message input and send button
-        const messageInput = document.querySelector('div.msg-form__contenteditable[contenteditable="true"][role="textbox"]');
-        const sendButton = document.querySelector('button.msg-form__send-button.artdeco-button--1[type="submit"]');
-        
-        if (!messageInput || !sendButton) {
-            console.log('Message dialog elements not found');
-            await closeAllMessageWindows();
-            return false;
+        // Click message button
+        console.log('Looking for message button...');
+        const messageBtn = await waitForElement('button[data-view-name="hiring-applicant-contact-message"]');
+        if (!messageBtn) {
+            console.log('Message button not found');
+            return;
         }
 
-        // Force set message content with retries
-        console.log('Force setting message content...');
-        const personalizedMessage = config.messageTemplate.replace(/{name}/g, name);
-        let messageSet = false;
-        for (let i = 0; i < 3; i++) {
-            messageSet = await forceSetMessageContent(messageInput, personalizedMessage);
-            if (messageSet) break;
-            await sleep(1000);
+        messageBtn.click();
+        await sleep(3000);
+
+        // Verify correct chat window
+        const isCorrectWindow = await verifyCorrectChatWindow(fullName);
+        if (!isCorrectWindow) {
+            console.log('Wrong chat window opened. Skipping...');
+            await closeCurrentMessageBox();
+            return;
         }
 
-        if (!messageSet) {
-            console.log('Failed to set message content after multiple attempts');
-            await closeAllMessageWindows();
-            return false;
+        // Find message box
+        const messageBox = await waitForElement('div.msg-form__contenteditable[contenteditable="true"][role="textbox"]');
+        if (!messageBox) {
+            console.log('Message box not found');
+            return;
         }
 
-        // Only ask for confirmation if requireApproval is true
-        if (config.requireApproval) {
-            const shouldSend = confirm(\`Ready to send message to: \${name}\\n\\nClick OK to send, or Cancel to skip.\`);
-            if (!shouldSend) {
-                console.log('User skipped sending to:', name);
-                await closeAllMessageWindows();
-                return false;
+        // Set message content
+        console.log('Setting message content...');
+        const personalizedMessage = config.messageTemplate.replace('{firstName}', firstName);
+        const contentSet = await setMessageContent(messageBox, personalizedMessage);
+        if (!contentSet) {
+            console.log('Failed to set message content');
+            return;
+        }
+
+        // Ask for confirmation
+        const shouldSend = confirm(
+            'Ready to send message to: ' + fullName + '\\n\\n' +
+            'Click OK to send the message, or Cancel to skip.'
+        );
+
+        if (shouldSend) {
+            const sendButton = await waitForElement('button.msg-form__send-button[type="submit"]');
+            if (sendButton) {
+                sendButton.click();
+                console.log('Message sent to:', fullName);
+                await sleep(2000);
+                
+                // Close message box after sending
+                await closeCurrentMessageBox();
+                await sleep(2000);
+            } else {
+                console.log('Unable to click on send button');
+                await closeCurrentMessageBox();
+                await sleep(2000);
             }
-        }
-
-        // Force send message with retries
-        console.log('Force sending message...');
-        let messageSent = false;
-        for (let i = 0; i < 3; i++) {
-            await forceSendMessage(sendButton);
-            await sleep(2000);
-            
-            // Check if message was sent
-            messageSent = !document.querySelector('div.msg-form__contenteditable[contenteditable="true"][role="textbox"]');
-            if (messageSent) break;
-            
-            console.log(\`Retry \${i + 1} of sending message...\`);
-        }
-
-        if (messageSent) {
-            console.log('Message sent successfully to:', name);
-            await sleep(1000);
-            await closeAllMessageWindows();
-            return true;
         } else {
-            console.log('Failed to send message to:', name);
-            await closeAllMessageWindows();
-            return false;
+            console.log('Skipped sending to:', fullName);
+            await closeCurrentMessageBox();
         }
+
     } catch (error) {
         console.error('Error processing applicant:', error);
-        await closeAllMessageWindows();
-        return false;
+        await closeCurrentMessageBox();
+        await sleep(2000);
     }
 };
 
 const processAllApplicants = async () => {
     try {
-        // Close any existing message windows before starting
-        console.log('Closing all open message windows before starting...');
-        await closeAllMessageWindows();
-        await sleep(2000);
-
-        // Get all applicants
-        const applicants = document.querySelectorAll('li.hiring-applicants__list-item');
-        const totalApplicants = applicants.length;
+        const applicantLinks = Array.from(document.querySelectorAll('.hiring-applicants__list-item a'));
+        const totalApplicants = applicantLinks.length;
         
-        if (!totalApplicants) {
-            throw new Error('No applicants found. Make sure you are on the correct LinkedIn page.');
-        }
-
-        // Determine how many to process
+        // Determine how many applicants to process
         const limit = config.applicantLimit || totalApplicants;
         const applicantsToProcess = Math.min(limit, totalApplicants);
         
-        console.log(\`Found \${totalApplicants} applicants. Will process \${applicantsToProcess}.\`);
-        console.log(\`Approval required: \${config.requireApproval ? 'Yes' : 'No'}\`);
+        console.log('Found ' + totalApplicants + ' total applicants');
+        var l = config.applicantLimit ? ' (limited by config)' : '';
+        console.log('Will process ' + applicantsToProcess + ' applicants' + l);
 
-        let processed = 0;
         for (let i = 0; i < applicantsToProcess; i++) {
-            console.log(\`\\nProcessing applicant \${i + 1} of \${applicantsToProcess}\`);
-            
-            // Ensure all message windows are closed before each applicant
-            await closeAllMessageWindows();
-            await sleep(2000);
-            
-            const success = await processApplicant(applicants[i]);
-            if (success) processed++;
-            
-            // Wait between applicants
-            await sleep(config.delayBetweenMessages);
+            var c = i + 1;
+            console.log('\\n' + 'Processing applicant ' + c + ' of ' + applicantsToProcess);
+            await processApplicant(applicantLinks[i]);
+            await sleep(3000);
         }
-
-        // Final cleanup
-        await closeAllMessageWindows();
         
-        console.log(\`\\nFinished processing applicants\`);
-        console.log(\`Successfully processed \${processed} out of \${applicantsToProcess} applicants\`);
-        
-        alert(\`Successfully processed \${processed} out of \${applicantsToProcess} applicants\`);
+        console.log('\\nFinished processing applicants');
+        console.log('Processed ' + applicantsToProcess + ' out of ' + totalApplicants + ' total applicants');
     } catch (error) {
-        alert(\`Error: \${error.message}\`);
-        console.error('Script error:', error);
+        console.error('Error in main process:', error);
     }
 };
 
 // Start the process
-console.log('Starting LinkedIn Applicant Messenger...');
-console.log('Approval required:', ${requireApproval} ? 'Yes' : 'No');
+console.log('Starting to process applicants...');
 processAllApplicants().then(() => {
     console.log('Script completed');
 }).catch(error => {
-    console.error('Script failed:', error);
+    console.error('Fatal error:', error);
 });`;
 
             const scriptCard = document.getElementById('scriptCard');
@@ -650,6 +507,8 @@ processAllApplicants().then(() => {
             scriptContent.textContent = script;
             scriptCard.classList.remove('hidden');
             scriptCard.scrollIntoView({ behavior: 'smooth' });
+
+            console.log(script);
             
             // Apply syntax highlighting
             hljs.highlightElement(scriptContent);
