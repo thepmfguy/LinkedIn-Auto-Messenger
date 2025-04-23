@@ -382,6 +382,18 @@ const setMessageContent = async (messageBox, text) => {
 };
 
 const processApplicant = async (applicantElement) => {
+
+    try {
+        document.querySelectorAll('.msg-overlay-bubble-header__controls').forEach(function(container) {
+        const buttons = container.querySelectorAll('button');
+        if (buttons.length > 0) {
+            buttons[buttons.length - 1].click(); // Click the last button
+        }
+        });
+    } catch (error) {
+        console.error('Error closing message box:', error);
+    }
+
     try {
         // Get applicant name
         const nameElement = applicantElement.querySelector('.artdeco-entity-lockup__title');
