@@ -309,7 +309,6 @@ Array.from(messageHeaders).forEach(header => {
     if (lastButton) {
         lastButton.click();
 
-        await sleep(2000);
         const discardButton = await waitForElement('.artdeco-modal__actionbar--confirm-dialog button.artdeco-button--primary');
         if (discardButton) {
             $('.artdeco-modal__actionbar--confirm-dialog button.artdeco-button--primary').click()
