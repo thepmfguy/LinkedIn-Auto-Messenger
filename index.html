@@ -433,13 +433,32 @@ const processApplicant = async (applicantElement) => {
             return;
         }
 
-        // Ask for confirmation
-        const shouldSend = confirm(
-            'Ready to send message to: ' + fullName + '\\n\\n' +
-            'Click OK to send the message, or Cancel to skip.'
-        );
-
-        if (shouldSend) {
+        if (config.requireApproval) {   
+            // Ask for confirmation
+            const shouldSend = confirm(
+                'Ready to send message to: ' + fullName + '\\n\\n' +
+                'Click OK to send the message, or Cancel to skip.'
+            );
+            if (shouldSend) {
+                const sendButton = await waitForElement('button.msg-form__send-button[type="submit"]');
+                if (sendButton) {
+                    sendButton.click();
+                    console.log('Message sent to:', fullName);
+                    await sleep(2000);
+                    
+                    // Close message box after sending
+                    await closeCurrentMessageBox();
+                    await sleep(2000);
+                } else {
+                    console.log('Unable to click on send button');
+                    await closeCurrentMessageBox();
+                    await sleep(2000);
+                }
+            } else {
+                console.log('Skipped sending to:', fullName);
+                await closeCurrentMessageBox();
+            }
+        } else {
             const sendButton = await waitForElement('button.msg-form__send-button[type="submit"]');
             if (sendButton) {
                 sendButton.click();
@@ -454,11 +473,7 @@ const processApplicant = async (applicantElement) => {
                 await closeCurrentMessageBox();
                 await sleep(2000);
             }
-        } else {
-            console.log('Skipped sending to:', fullName);
-            await closeCurrentMessageBox();
         }
-
     } catch (error) {
         console.error('Error processing applicant:', error);
         await closeCurrentMessageBox();
