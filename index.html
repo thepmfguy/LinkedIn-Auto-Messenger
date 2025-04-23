@@ -517,6 +517,7 @@ const processAllApplicants = async () => {
 console.log('Starting to process applicants...');
 processAllApplicants().then(() => {
     console.log('Script completed');
+    window.location.reload();
 }).catch(error => {
     console.error('Fatal error:', error);
 });`;
