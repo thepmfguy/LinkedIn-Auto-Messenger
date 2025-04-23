@@ -301,24 +301,21 @@ const waitForElement = async (selector, timeout = 10000) => {
 };
 
 const closeCurrentMessageBox = async () => {
-const messageHeaders = document.querySelectorAll('div.msg-overlay-bubble-header__controls.display-flex.align-items-center');
+    const messageHeaders = document.querySelectorAll('div.msg-overlay-bubble-header__controls.display-flex.align-items-center');
 
-// Convert NodeList to Array and loop through each div
-Array.from(messageHeaders).forEach(header => {
-    const lastButton = header.lastElementChild;
-    if (lastButton) {
-        lastButton.click();
+    // Convert NodeList to Array and loop through each div
+    for (const header of Array.from(messageHeaders)) {
+        const lastButton = header.lastElementChild;
+        if (lastButton) {
+            lastButton.click();
 
-        const discardButton = await waitForElement('.artdeco-modal__actionbar--confirm-dialog button.artdeco-button--primary');
-        if (discardButton) {
-            $('.artdeco-modal__actionbar--confirm-dialog button.artdeco-button--primary').click()
-        }            
-
+            await sleep(2000);
+            const discardButton = await waitForElement('.artdeco-modal__actionbar--confirm-dialog button.artdeco-button--primary');
+            if (discardButton) {
+                discardButton.click();
+            }            
+        }
     }
-});
-
-
-    return false;
 };
 
 const verifyCorrectChatWindow = async (expectedName) => {
